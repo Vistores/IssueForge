@@ -1,0 +1,52 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Overview</p>
+    <h1>QA issue dashboard</h1>
+    <p>Track project health, open work, fixed bugs and critical issues from one place.</p>
+  </div>
+  <a class="button primary" routerLink="/issues/new">Create issue</a>
+</section>
+
+@if (isLoading) {
+  <p class="state">Loading dashboard...</p>
+} @else if (error) {
+  <p class="state error">{{ error }}</p>
+} @else if (summary) {
+  <section class="metric-grid">
+    <article class="metric">
+      <span>Total issues</span>
+      <strong>{{ summary.totalIssues }}</strong>
+    </article>
+    <article class="metric">
+      <span>Open</span>
+      <strong>{{ summary.openIssues }}</strong>
+    </article>
+    <article class="metric">
+      <span>Fixed</span>
+      <strong>{{ summary.fixedIssues }}</strong>
+    </article>
+    <article class="metric critical">
+      <span>Critical</span>
+      <strong>{{ summary.criticalIssues }}</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Issues by status</h2>
+      <a routerLink="/issues">View all issues</a>
+    </div>
+
+    <div class="status-list">
+      @for (item of summary.issuesByStatus; track item.status) {
+        <div class="status-row">
+          <span>{{ item.status }}</span>
+          <div class="bar">
+            <span [style.width.%]="summary.totalIssues ? (item.count / summary.totalIssues) * 100 : 0"></span>
+          </div>
+          <strong>{{ item.count }}</strong>
+        </div>
+      }
+    </div>
+  </section>
+}
