@@ -195,6 +195,12 @@
   color: var(--danger);
 }
 
+.compact-button {
+  font-size: 12px;
+  min-height: 32px;
+  padding: 5px 10px;
+}
+
 .panel {
   background:
     linear-gradient(135deg, rgba(255, 249, 224, 0.38), transparent 36%),
@@ -572,7 +578,26 @@ textarea {
 
 .description {
   line-height: 1.7;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.preview-description {
+  background: rgba(91, 55, 20, 0.08);
+  border: 1px solid rgba(156, 113, 55, 0.52);
+  border-radius: 6px;
+  margin: 0;
+  max-height: 34vh;
+  overflow: auto;
+  padding: 12px;
+}
+
+.section-title-row {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 .issue-description-panel {
@@ -591,21 +616,33 @@ textarea {
 .comment {
   border: 1px solid var(--border);
   border-radius: 6px;
+  display: grid;
+  gap: 0;
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
-  padding: 16px;
 }
 
-.comment > div {
+.comment-header {
+  align-items: start;
+  background: rgba(91, 55, 20, 0.09);
+  border-bottom: 1px solid rgba(156, 113, 55, 0.34);
   display: flex;
   gap: 10px;
   justify-content: space-between;
   min-width: 0;
+  padding: 12px 14px;
+}
+
+.comment-header > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
 .comment strong,
-.comment span {
+.comment time,
+.comment small {
   color: var(--muted);
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -615,13 +652,39 @@ textarea {
   color: var(--text);
 }
 
+.comment time {
+  flex: 0 1 auto;
+  font-size: 13px;
+  text-align: right;
+}
+
+.comment small {
+  font-size: 12px;
+}
+
+.comment-body {
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px;
+}
+
 .comment-text {
   line-height: 1.65;
-  margin: 14px 0;
+  margin: 0;
   max-width: 100%;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.comment-footer {
+  align-items: center;
+  background: rgba(91, 55, 20, 0.06);
+  border-top: 1px solid rgba(156, 113, 55, 0.28);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 10px 14px;
 }
 
 .dashboard-grid {
@@ -1027,9 +1090,14 @@ textarea {
   }
 
   .page-header,
-  .header-actions {
+  .header-actions,
+  .comment-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .comment time {
+    text-align: left;
   }
 
   .metric-grid,

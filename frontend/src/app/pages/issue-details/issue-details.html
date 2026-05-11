@@ -24,7 +24,12 @@
         <span class="badge priority-{{ issue.priority.toLowerCase() }}">{{ issue.priority }}</span>
         <span>{{ issue.commentCount }} comments</span>
       </div>
-      <h2>Description</h2>
+      <div class="section-title-row">
+        <h2>Description</h2>
+        <button class="button ghost compact-button" type="button" (click)="copyText(issue.description, 'Description')">
+          Copy
+        </button>
+      </div>
       <p class="description">{{ issue.description }}</p>
     </article>
 
@@ -57,12 +62,22 @@
     <div class="comment-list">
       @for (comment of comments; track comment.id) {
         <article class="comment">
-          <div>
-            <strong>{{ comment.author }}</strong>
-            <span>{{ comment.createdAt | date: 'medium' }}</span>
+          <div class="comment-header">
+            <div>
+              <strong>{{ comment.author }}</strong>
+              <small>Comment</small>
+            </div>
+            <time>{{ comment.createdAt | date: 'medium' }}</time>
           </div>
-          <p class="comment-text">{{ comment.text }}</p>
-          <button class="button danger" type="button" (click)="deleteComment(comment)">Delete</button>
+          <div class="comment-body">
+            <p class="comment-text">{{ comment.text }}</p>
+          </div>
+          <div class="comment-footer">
+            <button class="button ghost compact-button" type="button" (click)="copyText(comment.text, 'Comment')">
+              Copy
+            </button>
+            <button class="button danger compact-button" type="button" (click)="deleteComment(comment)">Delete</button>
+          </div>
         </article>
       } @empty {
         <p>No comments yet.</p>

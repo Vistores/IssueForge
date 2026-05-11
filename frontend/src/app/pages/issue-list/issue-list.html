@@ -163,7 +163,13 @@
     <button class="drawer-close" type="button" (click)="closePreview()">Close</button>
     <p class="eyebrow">{{ selectedIssue.projectName }}</p>
     <h2>{{ selectedIssue.title }}</h2>
-    <p class="description">{{ selectedIssue.description }}</p>
+    <div class="section-title-row">
+      <strong>Description</strong>
+      <button class="button ghost compact-button" type="button" (click)="copyDescription(selectedIssue)">
+        Copy
+      </button>
+    </div>
+    <p class="description preview-description">{{ selectedIssue.description }}</p>
 
     <dl class="drawer-meta">
       <div>
@@ -185,7 +191,7 @@
     </dl>
 
     <div class="drawer-actions">
-      <a class="button primary" [routerLink]="['/issues', selectedIssue.id]">Open details</a>
+      <button class="button ghost" type="button" (click)="copyDescription(selectedIssue)">Copy description</button>
       <a class="button ghost" [routerLink]="['/issues', selectedIssue.id, 'edit']">Edit</a>
     </div>
   </aside>

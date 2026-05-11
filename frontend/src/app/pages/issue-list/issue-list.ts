@@ -93,6 +93,13 @@ export class IssueList implements OnInit {
     this.selectedIssue = undefined;
   }
 
+  copyDescription(issue: Issue): void {
+    navigator.clipboard
+      .writeText(issue.description)
+      .then(() => this.toast.success('Description copied.'))
+      .catch(() => this.toast.error('Could not copy description.'));
+  }
+
   clearFilters(): void {
     this.filters = { status: '', priority: '', projectId: '' };
     this.loadIssues();

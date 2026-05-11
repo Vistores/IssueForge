@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Comment, Issue } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
+import { Toast } from '../../core/services/toast';
 
 @Component({
   selector: 'app-issue-details',
@@ -26,6 +27,7 @@ export class IssueDetails implements OnInit {
 
   constructor(
     private readonly api: Api,
+    private readonly toast: Toast,
     private readonly route: ActivatedRoute,
     private readonly router: Router
   ) {}
@@ -93,5 +95,12 @@ export class IssueDetails implements OnInit {
       next: () => this.router.navigateByUrl('/issues'),
       error: () => (this.error = 'Could not delete issue.')
     });
+  }
+
+  copyText(value: string, label = 'Text'): void {
+    navigator.clipboard
+      .writeText(value)
+      .then(() => this.toast.success(`${label} copied.`))
+      .catch(() => this.toast.error(`Could not copy ${label.toLowerCase()}.`));
   }
 }
