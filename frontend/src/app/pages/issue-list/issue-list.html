@@ -1,84 +1,192 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Issues</p>
+    <p class="eyebrow">Issue workflow</p>
     <h1>Bug reports and technical tasks</h1>
-    <p>Filter work by project, priority and workflow status.</p>
+    <p>Drag cards between statuses, triage priority inline, or switch to a table for precise scanning.</p>
   </div>
   <a class="button primary" routerLink="/issues/new">New issue</a>
 </section>
 
-<section class="panel filters">
-  <label>
-    <span>Status</span>
-    <select [(ngModel)]="filters.status" (change)="loadIssues()">
-      <option value="">All statuses</option>
-      @for (status of statuses; track status) {
-        <option [value]="status">{{ status }}</option>
-      }
-    </select>
-  </label>
+<section class="toolbar panel">
+  <div class="filters">
+    <label>
+      <span>Status</span>
+      <select [(ngModel)]="filters.status" (change)="loadIssues()">
+        <option value="">All statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </label>
 
-  <label>
-    <span>Priority</span>
-    <select [(ngModel)]="filters.priority" (change)="loadIssues()">
-      <option value="">All priorities</option>
-      @for (priority of priorities; track priority) {
-        <option [value]="priority">{{ priority }}</option>
-      }
-    </select>
-  </label>
+    <label>
+      <span>Priority</span>
+      <select [(ngModel)]="filters.priority" (change)="loadIssues()">
+        <option value="">All priorities</option>
+        @for (priority of priorities; track priority) {
+          <option [value]="priority">{{ priority }}</option>
+        }
+      </select>
+    </label>
 
-  <label>
-    <span>Project</span>
-    <select [(ngModel)]="filters.projectId" (change)="loadIssues()">
-      <option value="">All projects</option>
-      @for (project of projects; track project.id) {
-        <option [ngValue]="project.id">{{ project.name }}</option>
-      }
-    </select>
-  </label>
+    <label>
+      <span>Project</span>
+      <select [(ngModel)]="filters.projectId" (change)="loadIssues()">
+        <option value="">All projects</option>
+        @for (project of projects; track project.id) {
+          <option [ngValue]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </label>
 
-  <button class="button ghost" type="button" (click)="clearFilters()">Clear</button>
+    <button class="button ghost" type="button" (click)="clearFilters()">Clear</button>
+  </div>
+
+  <div class="view-toggle" aria-label="View mode">
+    <button type="button" [class.active]="viewMode === 'board'" (click)="viewMode = 'board'">Board</button>
+    <button type="button" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'">Table</button>
+  </div>
 </section>
 
 @if (isLoading) {
-  <p class="state">Loading issues...</p>
+  <section class="board">
+    @for (status of statuses; track status) {
+      <div class="board-column skeleton-board"></div>
+    }
+  </section>
 } @else if (error) {
   <p class="state error">{{ error }}</p>
+} @else if (viewMode === 'board') {
+  <section class="board">
+    @for (status of statuses; track status) {
+      <article class="board-column">
+        <header>
+          <span class="status-dot status-{{ status.toLowerCase() }}"></span>
+          <strong>{{ status }}</strong>
+          <small>{{ issuesByStatus(status).length }}</small>
+        </header>
+
+        <div
+          class="drop-zone"
+          cdkDropList
+          [id]="'board-' + status"
+          [cdkDropListData]="issuesByStatus(status)"
+          [cdkDropListConnectedTo]="boardDropLists"
+          (cdkDropListDropped)="dropIssue($event, status)"
+        >
+          @for (issue of issuesByStatus(status); track issue.id) {
+            <article class="issue-card priority-border-{{ issue.priority.toLowerCase() }}" cdkDrag [cdkDragData]="issue">
+              <button class="card-main" type="button" (click)="openPreview(issue)">
+                <span class="card-title">{{ issue.title }}</span>
+                <span class="card-description">{{ issue.description }}</span>
+              </button>
+
+              <div class="card-meta">
+                <span>{{ issue.projectName }}</span>
+                <span>{{ issue.commentCount }} comments</span>
+              </div>
+
+              <div class="card-actions">
+                <select #boardStatus [value]="issue.status" (change)="changeStatus(issue, boardStatus.value)">
+                  @for (option of statuses; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+
+                <select #boardPriority [value]="issue.priority" (change)="changePriority(issue, boardPriority.value)">
+                  @for (priority of priorities; track priority) {
+                    <option [value]="priority">{{ priority }}</option>
+                  }
+                </select>
+              </div>
+            </article>
+          } @empty {
+            <div class="empty-drop">Drop issues here</div>
+          }
+        </div>
+      </article>
+    }
+  </section>
+} @else {
+  <section class="panel table-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Project</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Updated</th>
+          <th class="actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (issue of issues; track issue.id) {
+          <tr>
+            <td>
+              <button class="table-link as-button" type="button" (click)="openPreview(issue)">{{ issue.title }}</button>
+            </td>
+            <td>{{ issue.projectName }}</td>
+            <td>
+              <select #rowStatus class="inline-select" [value]="issue.status" (change)="changeStatus(issue, rowStatus.value)">
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </td>
+            <td>
+              <select #rowPriority class="inline-select priority-{{ issue.priority.toLowerCase() }}" [value]="issue.priority" (change)="changePriority(issue, rowPriority.value)">
+                @for (priority of priorities; track priority) {
+                  <option [value]="priority">{{ priority }}</option>
+                }
+              </select>
+            </td>
+            <td>{{ issue.updatedAt | date: 'mediumDate' }}</td>
+            <td class="actions">
+              <a class="button ghost" [routerLink]="['/issues', issue.id, 'edit']">Edit</a>
+              <button class="button danger" type="button" (click)="deleteIssue(issue)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6">No issues match the current filters.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
 }
 
-<section class="panel">
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Project</th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Updated</th>
-        <th class="actions">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (issue of issues; track issue.id) {
-        <tr>
-          <td>
-            <a class="table-link" [routerLink]="['/issues', issue.id]">{{ issue.title }}</a>
-          </td>
-          <td>{{ issue.projectName }}</td>
-          <td><span class="badge">{{ issue.status }}</span></td>
-          <td><span class="badge priority-{{ issue.priority.toLowerCase() }}">{{ issue.priority }}</span></td>
-          <td>{{ issue.updatedAt | date: 'mediumDate' }}</td>
-          <td class="actions">
-            <a class="button ghost" [routerLink]="['/issues', issue.id, 'edit']">Edit</a>
-            <button class="button danger" type="button" (click)="deleteIssue(issue)">Delete</button>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="6">No issues match the current filters.</td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</section>
+@if (selectedIssue) {
+  <div class="drawer-backdrop" (click)="closePreview()"></div>
+  <aside class="issue-drawer">
+    <button class="drawer-close" type="button" (click)="closePreview()">Close</button>
+    <p class="eyebrow">{{ selectedIssue.projectName }}</p>
+    <h2>{{ selectedIssue.title }}</h2>
+    <p class="description">{{ selectedIssue.description }}</p>
+
+    <dl class="drawer-meta">
+      <div>
+        <dt>Status</dt>
+        <dd><span class="badge">{{ selectedIssue.status }}</span></dd>
+      </div>
+      <div>
+        <dt>Priority</dt>
+        <dd><span class="badge priority-{{ selectedIssue.priority.toLowerCase() }}">{{ selectedIssue.priority }}</span></dd>
+      </div>
+      <div>
+        <dt>Comments</dt>
+        <dd>{{ selectedIssue.commentCount }}</dd>
+      </div>
+      <div>
+        <dt>Updated</dt>
+        <dd>{{ selectedIssue.updatedAt | date: 'medium' }}</dd>
+      </div>
+    </dl>
+
+    <div class="drawer-actions">
+      <a class="button primary" [routerLink]="['/issues', selectedIssue.id]">Open details</a>
+      <a class="button ghost" [routerLink]="['/issues', selectedIssue.id, 'edit']">Edit</a>
+    </div>
+  </aside>
+}

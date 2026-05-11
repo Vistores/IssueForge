@@ -13,9 +13,22 @@
       <a routerLink="/projects" routerLinkActive="active">Projects</a>
       <a routerLink="/issues" routerLinkActive="active">Issues</a>
     </nav>
+
+    <div class="sidebar-note">
+      <span>Local demo</span>
+      <strong>SQLite + Angular + ASP.NET</strong>
+    </div>
   </aside>
 
   <main class="content">
     <router-outlet />
   </main>
+
+  <div class="toast-stack">
+    @for (message of toast.messages$ | async; track message.id) {
+      <button class="toast toast-{{ message.type }}" type="button" (click)="toast.dismiss(message.id)">
+        {{ message.text }}
+      </button>
+    }
+  </div>
 </div>

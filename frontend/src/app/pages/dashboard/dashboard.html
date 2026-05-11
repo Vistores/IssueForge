@@ -1,51 +1,104 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Overview</p>
+    <p class="eyebrow">Game QA Command Center</p>
     <h1>QA issue dashboard</h1>
-    <p>Track project health, open work, fixed bugs and critical issues from one place.</p>
+    <p>Track project health, critical defects and the current workflow state in one focused view.</p>
   </div>
   <a class="button primary" routerLink="/issues/new">Create issue</a>
 </section>
 
 @if (isLoading) {
-  <p class="state">Loading dashboard...</p>
+  <section class="metric-grid">
+    <div class="skeleton metric"></div>
+    <div class="skeleton metric"></div>
+    <div class="skeleton metric"></div>
+    <div class="skeleton metric"></div>
+  </section>
 } @else if (error) {
   <p class="state error">{{ error }}</p>
 } @else if (summary) {
   <section class="metric-grid">
     <article class="metric">
+      <div class="metric-icon">#</div>
       <span>Total issues</span>
       <strong>{{ summary.totalIssues }}</strong>
+      <small>All tracked QA work</small>
     </article>
     <article class="metric">
+      <div class="metric-icon open">!</div>
       <span>Open</span>
       <strong>{{ summary.openIssues }}</strong>
+      <small>Needs triage or implementation</small>
     </article>
     <article class="metric">
+      <div class="metric-icon fixed">OK</div>
       <span>Fixed</span>
       <strong>{{ summary.fixedIssues }}</strong>
+      <small>Ready for verification</small>
     </article>
     <article class="metric critical">
+      <div class="metric-icon critical">!!</div>
       <span>Critical</span>
       <strong>{{ summary.criticalIssues }}</strong>
+      <small>Highest risk issues</small>
     </article>
   </section>
 
-  <section class="panel">
+  <section class="dashboard-grid">
+    <article class="panel">
+      <div class="panel-header">
+        <h2>Issues by status</h2>
+        <a routerLink="/issues">Open board</a>
+      </div>
+
+      <div class="status-list">
+        @for (item of summary.issuesByStatus; track item.status) {
+          <div class="status-row">
+            <span>{{ item.status }}</span>
+            <div class="bar">
+              <span [class]="'bar-fill status-' + item.status.toLowerCase()" [style.width.%]="summary.totalIssues ? (item.count / summary.totalIssues) * 100 : 0"></span>
+            </div>
+            <strong>{{ item.count }}</strong>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <h2>Recently updated</h2>
+        <a routerLink="/issues">View all</a>
+      </div>
+
+      <div class="compact-issue-list">
+        @for (issue of recentIssues; track issue.id) {
+          <a class="compact-issue" [routerLink]="['/issues', issue.id]">
+            <span class="status-dot status-{{ issue.status.toLowerCase() }}"></span>
+            <span>
+              <strong>{{ issue.title }}</strong>
+              <small>{{ issue.projectName }} · {{ issue.updatedAt | date: 'mediumDate' }}</small>
+            </span>
+          </a>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="panel danger-panel">
     <div class="panel-header">
-      <h2>Issues by status</h2>
-      <a routerLink="/issues">View all issues</a>
+      <h2>Critical watchlist</h2>
+      <a routerLink="/issues">Triage</a>
     </div>
 
-    <div class="status-list">
-      @for (item of summary.issuesByStatus; track item.status) {
-        <div class="status-row">
-          <span>{{ item.status }}</span>
-          <div class="bar">
-            <span [style.width.%]="summary.totalIssues ? (item.count / summary.totalIssues) * 100 : 0"></span>
-          </div>
-          <strong>{{ item.count }}</strong>
-        </div>
+    <div class="watchlist">
+      @for (issue of criticalIssues; track issue.id) {
+        <a class="watch-item" [routerLink]="['/issues', issue.id]">
+          <span class="badge priority-critical">Critical</span>
+          <strong>{{ issue.title }}</strong>
+          <small>{{ issue.projectName }} · {{ issue.status }}</small>
+        </a>
+      } @empty {
+        <p class="muted">No critical issues right now.</p>
       }
     </div>
   </section>
