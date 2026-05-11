@@ -1,0 +1,33 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Project form</p>
+    <h1>{{ projectId ? 'Edit project' : 'Create project' }}</h1>
+    <p>Keep project records short and useful for filtering QA issues.</p>
+  </div>
+</section>
+
+<form class="panel form" [formGroup]="form" (ngSubmit)="save()">
+  @if (error) {
+    <p class="state error">{{ error }}</p>
+  }
+
+  <label>
+    <span>Name</span>
+    <input formControlName="name" placeholder="Space Raiders" />
+  </label>
+  @if (form.controls.name.touched && form.controls.name.invalid) {
+    <p class="field-error">Project name is required.</p>
+  }
+
+  <label>
+    <span>Description</span>
+    <textarea formControlName="description" rows="4" placeholder="Short project description"></textarea>
+  </label>
+
+  <div class="form-actions">
+    <a class="button ghost" routerLink="/projects">Cancel</a>
+    <button class="button primary" type="submit" [disabled]="isSaving">
+      {{ isSaving ? 'Saving...' : 'Save project' }}
+    </button>
+  </div>
+</form>

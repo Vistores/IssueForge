@@ -1,0 +1,68 @@
+@if (isLoading) {
+  <p class="state">Loading issue...</p>
+} @else if (error) {
+  <p class="state error">{{ error }}</p>
+}
+
+@if (issue) {
+  <section class="page-header">
+    <div>
+      <p class="eyebrow">{{ issue.projectName }}</p>
+      <h1>{{ issue.title }}</h1>
+      <p>Created {{ issue.createdAt | date: 'medium' }}. Updated {{ issue.updatedAt | date: 'medium' }}.</p>
+    </div>
+    <div class="header-actions">
+      <a class="button ghost" [routerLink]="['/issues', issue.id, 'edit']">Edit</a>
+      <button class="button danger" type="button" (click)="deleteIssue()">Delete</button>
+    </div>
+  </section>
+
+  <section class="details-layout">
+    <article class="panel">
+      <div class="detail-meta">
+        <span class="badge">{{ issue.status }}</span>
+        <span class="badge priority-{{ issue.priority.toLowerCase() }}">{{ issue.priority }}</span>
+        <span>{{ issue.commentCount }} comments</span>
+      </div>
+      <h2>Description</h2>
+      <p class="description">{{ issue.description }}</p>
+    </article>
+
+    <aside class="panel">
+      <h2>Add comment</h2>
+      <form class="form compact" [formGroup]="commentForm" (ngSubmit)="addComment()">
+        <label>
+          <span>Author</span>
+          <input formControlName="author" />
+        </label>
+        <label>
+          <span>Comment</span>
+          <textarea formControlName="text" rows="4"></textarea>
+        </label>
+        <button class="button primary" type="submit">Add comment</button>
+      </form>
+    </aside>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Comments</h2>
+      <span>{{ comments.length }} total</span>
+    </div>
+
+    <div class="comment-list">
+      @for (comment of comments; track comment.id) {
+        <article class="comment">
+          <div>
+            <strong>{{ comment.author }}</strong>
+            <span>{{ comment.createdAt | date: 'medium' }}</span>
+          </div>
+          <p>{{ comment.text }}</p>
+          <button class="button danger" type="button" (click)="deleteComment(comment)">Delete</button>
+        </article>
+      } @empty {
+        <p>No comments yet.</p>
+      }
+    </div>
+  </section>
+}

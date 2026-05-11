@@ -1,0 +1,65 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Issue form</p>
+    <h1>{{ issueId ? 'Edit issue' : 'Create issue' }}</h1>
+    <p>Capture the bug clearly enough for another developer to reproduce and fix it.</p>
+  </div>
+</section>
+
+<form class="panel form" [formGroup]="form" (ngSubmit)="save()">
+  @if (error) {
+    <p class="state error">{{ error }}</p>
+  }
+
+  <label>
+    <span>Title</span>
+    <input formControlName="title" placeholder="Player ship clips through asteroid edge" />
+  </label>
+  @if (form.controls.title.touched && form.controls.title.invalid) {
+    <p class="field-error">Issue title is required.</p>
+  }
+
+  <label>
+    <span>Description</span>
+    <textarea formControlName="description" rows="6" placeholder="Steps, expected result and actual result"></textarea>
+  </label>
+  @if (form.controls.description.touched && form.controls.description.invalid) {
+    <p class="field-error">Description is required.</p>
+  }
+
+  <div class="form-grid">
+    <label>
+      <span>Project</span>
+      <select formControlName="projectId">
+        @for (project of projects; track project.id) {
+          <option [value]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Status</span>
+      <select formControlName="status">
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Priority</span>
+      <select formControlName="priority">
+        @for (priority of priorities; track priority) {
+          <option [value]="priority">{{ priority }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <a class="button ghost" routerLink="/issues">Cancel</a>
+    <button class="button primary" type="submit" [disabled]="isSaving">
+      {{ isSaving ? 'Saving...' : 'Save issue' }}
+    </button>
+  </div>
+</form>

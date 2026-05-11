@@ -1,0 +1,44 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Projects</p>
+    <h1>Game and software projects</h1>
+    <p>Organize issues by product, prototype or internal tool.</p>
+  </div>
+  <a class="button primary" routerLink="/projects/new">New project</a>
+</section>
+
+@if (isLoading) {
+  <p class="state">Loading projects...</p>
+} @else if (error) {
+  <p class="state error">{{ error }}</p>
+}
+
+<section class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Issues</th>
+        <th class="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (project of projects; track project.id) {
+        <tr>
+          <td><strong>{{ project.name }}</strong></td>
+          <td>{{ project.description || 'No description' }}</td>
+          <td>{{ project.issueCount }}</td>
+          <td class="actions">
+            <a class="button ghost" [routerLink]="['/projects', project.id, 'edit']">Edit</a>
+            <button class="button danger" type="button" (click)="deleteProject(project)">Delete</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4">No projects yet.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
