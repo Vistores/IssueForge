@@ -532,7 +532,11 @@ textarea {
 }
 
 textarea {
+  line-height: 1.55;
+  overflow-wrap: anywhere;
   resize: vertical;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .inline-select {
@@ -587,6 +591,9 @@ textarea {
 .comment {
   border: 1px solid var(--border);
   border-radius: 6px;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
   padding: 16px;
 }
 
@@ -594,10 +601,27 @@ textarea {
   display: flex;
   gap: 10px;
   justify-content: space-between;
+  min-width: 0;
 }
 
+.comment strong,
 .comment span {
   color: var(--muted);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.comment strong {
+  color: var(--text);
+}
+
+.comment-text {
+  line-height: 1.65;
+  margin: 14px 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .dashboard-grid {

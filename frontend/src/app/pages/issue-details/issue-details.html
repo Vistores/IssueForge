@@ -37,7 +37,11 @@
         </label>
         <label>
           <span>Comment</span>
-          <textarea formControlName="text" rows="4"></textarea>
+        <textarea
+          formControlName="text"
+          rows="6"
+          placeholder="Write reproduction notes, observations, or verification results..."
+        ></textarea>
         </label>
         <button class="button primary" type="submit">Add comment</button>
       </form>
@@ -57,7 +61,7 @@
             <strong>{{ comment.author }}</strong>
             <span>{{ comment.createdAt | date: 'medium' }}</span>
           </div>
-          <p>{{ comment.text }}</p>
+          <p class="comment-text">{{ comment.text }}</p>
           <button class="button danger" type="button" (click)="deleteComment(comment)">Delete</button>
         </article>
       } @empty {
