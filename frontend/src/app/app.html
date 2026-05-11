@@ -1,0 +1,21 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/">
+      <span class="brand-mark">GI</span>
+      <span>
+        <strong>GameIssueTracker</strong>
+        <small>QA dashboard</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/projects" routerLinkActive="active">Projects</a>
+      <a routerLink="/issues" routerLinkActive="active">Issues</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
