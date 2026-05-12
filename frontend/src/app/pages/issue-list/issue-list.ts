@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Issue, IssuePriority, IssueStatus, Project } from '../../core/models/api.models';
+import { Comment, Issue, IssuePriority, IssueStatus, Project } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
@@ -20,6 +20,8 @@ export class IssueList implements OnInit {
   issues: Issue[] = [];
   projects: Project[] = [];
   selectedIssue?: Issue;
+  selectedComments: Comment[] = [];
+  isPreviewLoading = false;
   viewMode: 'board' | 'table' = 'board';
   isLoading = true;
   error = '';
@@ -87,10 +89,23 @@ export class IssueList implements OnInit {
 
   openPreview(issue: Issue): void {
     this.selectedIssue = issue;
+    this.selectedComments = [];
+    this.isPreviewLoading = true;
+    this.api.getComments(issue.id).subscribe({
+      next: comments => {
+        this.selectedComments = comments;
+        this.isPreviewLoading = false;
+      },
+      error: () => {
+        this.isPreviewLoading = false;
+        this.toast.error('Could not load comments.');
+      }
+    });
   }
 
   closePreview(): void {
     this.selectedIssue = undefined;
+    this.selectedComments = [];
   }
 
   copyDescription(issue: Issue): void {
@@ -98,6 +113,13 @@ export class IssueList implements OnInit {
       .writeText(issue.description)
       .then(() => this.toast.success('Description copied.'))
       .catch(() => this.toast.error('Could not copy description.'));
+  }
+
+  copyComment(comment: Comment): void {
+    navigator.clipboard
+      .writeText(comment.text)
+      .then(() => this.toast.success('Comment copied.'))
+      .catch(() => this.toast.error('Could not copy comment.'));
   }
 
   clearFilters(): void {

@@ -1,19 +1,28 @@
 using GameIssueTracker.Api.Data;
 using GameIssueTracker.Api.DTOs;
 using GameIssueTracker.Api.Models;
+using GameIssueTracker.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameIssueTracker.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/issues/{issueId:int}/comments")]
-public class CommentsController(AppDbContext db) : ControllerBase
+public class CommentsController(AppDbContext db, CurrentUserService currentUser) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(int issueId)
     {
-        if (!await db.Issues.AnyAsync(issue => issue.Id == issueId))
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await db.Issues.AnyAsync(issue => issue.Id == issueId && issue.Project != null && issue.Project.TeamId == teamId))
         {
             return NotFound();
         }
@@ -35,7 +44,15 @@ public class CommentsController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CommentDto>> CreateComment(int issueId, CommentCreateDto dto)
     {
-        var issue = await db.Issues.FindAsync(issueId);
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        var issue = await db.Issues
+            .Include(issue => issue.Project)
+            .FirstOrDefaultAsync(issue => issue.Id == issueId && issue.Project != null && issue.Project.TeamId == teamId);
 
         if (issue is null)
         {
@@ -61,10 +78,18 @@ public class CommentsController(AppDbContext db) : ControllerBase
     [HttpDelete("{commentId:int}")]
     public async Task<IActionResult> DeleteComment(int issueId, int commentId)
     {
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
         var comment = await db.Comments
+            .Include(comment => comment.Issue)
+            .ThenInclude(issue => issue!.Project)
             .FirstOrDefaultAsync(comment => comment.Id == commentId && comment.IssueId == issueId);
 
-        if (comment is null)
+        if (comment is null || comment.Issue?.Project?.TeamId != teamId)
         {
             return NotFound();
         }

@@ -158,41 +158,82 @@
 }
 
 @if (selectedIssue) {
-  <div class="drawer-backdrop" (click)="closePreview()"></div>
-  <aside class="issue-drawer">
-    <button class="drawer-close" type="button" (click)="closePreview()">Close</button>
-    <p class="eyebrow">{{ selectedIssue.projectName }}</p>
-    <h2>{{ selectedIssue.title }}</h2>
-    <div class="section-title-row">
-      <strong>Description</strong>
-      <button class="button ghost compact-button" type="button" (click)="copyDescription(selectedIssue)">
-        Copy
-      </button>
-    </div>
-    <p class="description preview-description">{{ selectedIssue.description }}</p>
+  <div class="modal-backdrop" (click)="closePreview()"></div>
+  <section class="issue-modal" role="dialog" aria-modal="true">
+    <header class="issue-modal-header">
+      <div>
+        <p class="eyebrow">{{ selectedIssue.projectName }}</p>
+        <h2>{{ selectedIssue.title }}</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="closePreview()">Close</button>
+    </header>
 
-    <dl class="drawer-meta">
-      <div>
-        <dt>Status</dt>
-        <dd><span class="badge">{{ selectedIssue.status }}</span></dd>
-      </div>
-      <div>
-        <dt>Priority</dt>
-        <dd><span class="badge priority-{{ selectedIssue.priority.toLowerCase() }}">{{ selectedIssue.priority }}</span></dd>
-      </div>
-      <div>
-        <dt>Comments</dt>
-        <dd>{{ selectedIssue.commentCount }}</dd>
-      </div>
-      <div>
-        <dt>Updated</dt>
-        <dd>{{ selectedIssue.updatedAt | date: 'medium' }}</dd>
-      </div>
-    </dl>
+    <div class="issue-modal-body">
+      <article class="issue-modal-main">
+        <div class="section-title-row">
+          <strong>Description</strong>
+          <button class="button ghost compact-button" type="button" (click)="copyDescription(selectedIssue)">
+            Copy
+          </button>
+        </div>
+        <p class="description preview-description">{{ selectedIssue.description }}</p>
 
-    <div class="drawer-actions">
-      <button class="button ghost" type="button" (click)="copyDescription(selectedIssue)">Copy description</button>
-      <a class="button ghost" [routerLink]="['/issues', selectedIssue.id, 'edit']">Edit</a>
+        <dl class="drawer-meta">
+          <div>
+            <dt>Status</dt>
+            <dd><span class="badge">{{ selectedIssue.status }}</span></dd>
+          </div>
+          <div>
+            <dt>Priority</dt>
+            <dd><span class="badge priority-{{ selectedIssue.priority.toLowerCase() }}">{{ selectedIssue.priority }}</span></dd>
+          </div>
+          <div>
+            <dt>Comments</dt>
+            <dd>{{ selectedIssue.commentCount }}</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd>{{ selectedIssue.updatedAt | date: 'medium' }}</dd>
+          </div>
+        </dl>
+
+        <div class="drawer-actions">
+          <button class="button ghost" type="button" (click)="copyDescription(selectedIssue)">Copy description</button>
+          <a class="button ghost" [routerLink]="['/issues', selectedIssue.id, 'edit']">Edit</a>
+        </div>
+      </article>
+
+      <aside class="issue-modal-comments">
+        <div class="panel-header">
+          <h2>Comments</h2>
+          <span>{{ selectedComments.length }} total</span>
+        </div>
+
+        @if (isPreviewLoading) {
+          <p class="state">Loading comments...</p>
+        } @else {
+          <div class="comment-list modal-comment-list">
+            @for (comment of selectedComments; track comment.id) {
+              <article class="comment compact-comment">
+                <div class="comment-header">
+                  <div>
+                    <strong>{{ comment.author }}</strong>
+                    <small>{{ comment.createdAt | date: 'medium' }}</small>
+                  </div>
+                </div>
+                <div class="comment-body">
+                  <p class="comment-text">{{ comment.text }}</p>
+                </div>
+                <div class="comment-footer">
+                  <button class="button ghost compact-button" type="button" (click)="copyComment(comment)">Copy</button>
+                </div>
+              </article>
+            } @empty {
+              <p class="muted">No comments yet.</p>
+            }
+          </div>
+        }
+      </aside>
     </div>
-  </aside>
+  </section>
 }

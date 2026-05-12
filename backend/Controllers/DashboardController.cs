@@ -1,24 +1,35 @@
 using GameIssueTracker.Api.Data;
 using GameIssueTracker.Api.DTOs;
 using GameIssueTracker.Api.Models;
+using GameIssueTracker.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameIssueTracker.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class DashboardController(AppDbContext db) : ControllerBase
+public class DashboardController(AppDbContext db, CurrentUserService currentUser) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<DashboardDto>> GetDashboard()
     {
-        var totalIssues = await db.Issues.CountAsync();
-        var openIssues = await db.Issues.CountAsync(issue => issue.Status == IssueStatus.Open);
-        var fixedIssues = await db.Issues.CountAsync(issue => issue.Status == IssueStatus.Fixed);
-        var criticalIssues = await db.Issues.CountAsync(issue => issue.Priority == IssuePriority.Critical);
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
 
-        var grouped = await db.Issues
+        var teamIssues = db.Issues.Where(issue => issue.Project != null && issue.Project.TeamId == teamId);
+
+        var totalIssues = await teamIssues.CountAsync();
+        var openIssues = await teamIssues.CountAsync(issue => issue.Status == IssueStatus.Open);
+        var fixedIssues = await teamIssues.CountAsync(issue => issue.Status == IssueStatus.Fixed);
+        var criticalIssues = await teamIssues.CountAsync(issue => issue.Priority == IssuePriority.Critical);
+
+        var grouped = await teamIssues
             .GroupBy(issue => issue.Status)
             .Select(group => new StatusCountDto(group.Key.ToString(), group.Count()))
             .ToListAsync();

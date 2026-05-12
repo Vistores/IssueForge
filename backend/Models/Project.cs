@@ -6,6 +6,9 @@ public class Project
 {
     public int Id { get; set; }
 
+    public int TeamId { get; set; }
+    public Team? Team { get; set; }
+
     [Required]
     [MaxLength(120)]
     public string Name { get; set; } = string.Empty;

@@ -1,0 +1,135 @@
+<section class="access-page" [class.entering]="isEntering">
+  <div class="access-brand">
+    <span class="brand-mark">GI</span>
+    <div>
+      <strong>GameIssueTracker</strong>
+      <small>Private quest board</small>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <article class="auth-panel">
+      <p class="state">Preparing access...</p>
+    </article>
+  } @else if (!auth?.isAuthenticated) {
+    <article class="auth-panel auth-panel-main">
+      <header class="auth-header">
+        <h1>{{ authMode === 'login' ? 'Welcome back' : 'Create your account' }}</h1>
+        <p>
+          {{ authMode === 'login'
+            ? 'Sign in to open your team workspace.'
+            : 'Register first, then create or join a private team.' }}
+        </p>
+      </header>
+
+      <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+        <button type="button" [class.active]="authMode === 'login'" (click)="authMode = 'login'">
+          Sign in
+        </button>
+        <button type="button" [class.active]="authMode === 'register'" (click)="authMode = 'register'">
+          Register
+        </button>
+      </div>
+
+      @if (authMode === 'login') {
+        <div class="form compact auth-form">
+          <label>
+            <span>Email</span>
+            <input [(ngModel)]="loginEmail" autocomplete="email" />
+          </label>
+          <label>
+            <span>Password</span>
+            <input [(ngModel)]="loginPassword" type="password" autocomplete="current-password" />
+          </label>
+          <button class="button primary auth-submit" type="button" (click)="login()">Enter workspace</button>
+        </div>
+        <p class="auth-demo">Demo: demo@game.local / Demo123!</p>
+      } @else {
+        <div class="form compact auth-form">
+          <label>
+            <span>Name</span>
+            <input [(ngModel)]="registerName" autocomplete="name" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input [(ngModel)]="registerEmail" autocomplete="email" />
+          </label>
+          <label>
+            <span>Password</span>
+            <input [(ngModel)]="registerPassword" type="password" autocomplete="new-password" />
+          </label>
+          <button class="button primary auth-submit" type="button" (click)="register()">Create account</button>
+        </div>
+      }
+
+      <footer class="auth-footer">
+        <span>or continue with</span>
+        <button class="button ghost" type="button" [disabled]="!auth?.googleConfigured" (click)="loginWithGoogle()">
+          Google
+        </button>
+      </footer>
+    </article>
+  } @else {
+    <article class="auth-panel workspace-panel">
+      <header class="auth-header">
+        <h1>Choose your team</h1>
+        <p>Create a private workspace or join a team by invite code. Only teams where you are a member are visible.</p>
+      </header>
+
+      <div class="signed-user-strip">
+        <div>
+          <strong>{{ auth?.name || 'Signed-in user' }}</strong>
+          <span>{{ auth?.email }}</span>
+        </div>
+        <button class="button ghost compact-button" type="button" (click)="logout()">Sign out</button>
+      </div>
+
+      <div class="team-setup-grid">
+        <div class="mini-form">
+          <h2>Create team</h2>
+          <label>
+            <span>Team name</span>
+            <input [(ngModel)]="teamName" />
+          </label>
+          <button class="button primary" type="button" (click)="createTeam()">Create team</button>
+        </div>
+
+        <div class="mini-form">
+          <h2>Join team</h2>
+          <label>
+            <span>Invite code</span>
+            <input [(ngModel)]="inviteCode" placeholder="GUILD-2026" />
+          </label>
+          <button class="button ghost" type="button" (click)="joinTeam()">Join by code</button>
+        </div>
+      </div>
+
+      @if (error) {
+        <p class="state error">{{ error }}</p>
+      }
+
+      <div class="team-list access-team-list">
+        @for (team of teams; track team.id) {
+          <button class="team-card team-choice" type="button" [class.active-team]="team.id === activeTeamId" (click)="selectTeam(team)">
+            <span>
+              <strong>{{ team.name }}</strong>
+              <small>{{ team.projectCount }} projects &middot; {{ team.members.length }} members</small>
+            </span>
+            <span class="team-code">{{ team.inviteCode }}</span>
+          </button>
+        } @empty {
+          <div class="empty-team-state">
+            <h3>No team yet</h3>
+            <p>Create one or join with an invite code to continue.</p>
+          </div>
+        }
+      </div>
+
+      <div class="panel-footer">
+        <button class="button primary" type="button" [disabled]="!activeTeamId" (click)="openWorkspace()">
+          Open dashboard
+        </button>
+      </div>
+    </article>
+  }
+</section>

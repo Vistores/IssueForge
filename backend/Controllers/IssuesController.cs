@@ -1,15 +1,18 @@
 using GameIssueTracker.Api.Data;
 using GameIssueTracker.Api.DTOs;
 using GameIssueTracker.Api.Models;
+using GameIssueTracker.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace GameIssueTracker.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class IssuesController(AppDbContext db) : ControllerBase
+public class IssuesController(AppDbContext db, CurrentUserService currentUser) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<IssueDto>>> GetIssues(
@@ -17,7 +20,13 @@ public class IssuesController(AppDbContext db) : ControllerBase
         [FromQuery] IssuePriority? priority,
         [FromQuery] int? projectId)
     {
-        var query = db.Issues.AsQueryable();
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        var query = db.Issues.Where(issue => issue.Project != null && issue.Project.TeamId == teamId);
 
         if (status is not null)
         {
@@ -45,8 +54,14 @@ public class IssuesController(AppDbContext db) : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<ActionResult<IssueDto>> GetIssue(int id)
     {
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
         var issue = await db.Issues
-            .Where(issue => issue.Id == id)
+            .Where(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId)
             .Select(ToIssueDto)
             .FirstOrDefaultAsync();
 
@@ -56,7 +71,13 @@ public class IssuesController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<IssueDto>> CreateIssue(IssueCreateDto dto)
     {
-        if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId))
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId && project.TeamId == teamId))
         {
             ModelState.AddModelError(nameof(dto.ProjectId), "Selected project does not exist.");
             return ValidationProblem(ModelState);
@@ -88,14 +109,22 @@ public class IssuesController(AppDbContext db) : ControllerBase
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateIssue(int id, IssueUpdateDto dto)
     {
-        var issue = await db.Issues.FindAsync(id);
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        var issue = await db.Issues
+            .Include(issue => issue.Project)
+            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId);
 
         if (issue is null)
         {
             return NotFound();
         }
 
-        if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId))
+        if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId && project.TeamId == teamId))
         {
             ModelState.AddModelError(nameof(dto.ProjectId), "Selected project does not exist.");
             return ValidationProblem(ModelState);
@@ -116,7 +145,15 @@ public class IssuesController(AppDbContext db) : ControllerBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteIssue(int id)
     {
-        var issue = await db.Issues.FindAsync(id);
+        var teamId = await currentUser.GetActiveTeamIdAsync();
+        if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        var issue = await db.Issues
+            .Include(issue => issue.Project)
+            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId);
 
         if (issue is null)
         {

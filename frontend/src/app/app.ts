@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Toast } from './core/services/toast';
 
 @Component({
@@ -11,5 +11,12 @@ import { Toast } from './core/services/toast';
   encapsulation: ViewEncapsulation.None
 })
 export class App {
-  constructor(readonly toast: Toast) {}
+  constructor(
+    readonly toast: Toast,
+    readonly router: Router
+  ) {}
+
+  get isAccessRoute(): boolean {
+    return this.router.url.startsWith('/team');
+  }
 }
