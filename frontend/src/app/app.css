@@ -1434,8 +1434,8 @@ textarea {
   display: grid;
   gap: 10px;
   position: fixed;
+  bottom: 22px;
   right: 22px;
-  top: 22px;
   z-index: 40;
 }
 
@@ -1449,6 +1449,126 @@ textarea {
   min-width: 220px;
   padding: 12px 14px;
   text-align: left;
+}
+
+.account-panel {
+  align-items: center;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  max-width: 760px;
+}
+
+.account-avatar {
+  align-items: center;
+  background: linear-gradient(135deg, #c8942e, #7a2e13);
+  border: 1px solid rgba(255, 229, 166, 0.42);
+  border-radius: 10px;
+  color: #fff2cf;
+  display: inline-flex;
+  font-weight: 900;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.account-details {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.account-details span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.account-details strong {
+  overflow-wrap: anywhere;
+}
+
+.team-command-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.team-command-card {
+  display: grid;
+  gap: 12px;
+}
+
+.team-command-card h2,
+.team-ledger h2 {
+  margin: 0;
+}
+
+.team-ledger {
+  margin-top: 0;
+}
+
+.rich-team-list {
+  gap: 14px;
+}
+
+.rich-team-card {
+  gap: 14px;
+  padding: 16px;
+}
+
+.team-choice-main {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.team-name-block {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.team-name-block strong {
+  font-size: 18px;
+}
+
+.team-name-block small {
+  color: var(--muted);
+}
+
+.team-invite-block {
+  align-items: center;
+  background: rgba(91, 55, 20, 0.08);
+  border: 1px solid rgba(117, 78, 35, 0.34);
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.team-invite-block span {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 850;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.team-invite-block strong {
+  color: #8d3f1b;
+  letter-spacing: 0;
 }
 
 .toast-success {
@@ -1531,7 +1651,7 @@ textarea {
   }
 
   .nav {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .access-shell .content,
@@ -1571,7 +1691,9 @@ textarea {
   .details-layout,
   .dashboard-grid,
   .team-layout,
+  .team-command-grid,
   .team-setup-grid,
+  .account-panel,
   .issue-modal-body {
     grid-template-columns: 1fr;
   }
@@ -1601,9 +1723,21 @@ textarea {
 
   .signed-user-strip,
   .auth-footer,
-  .team-choice {
+  .team-choice,
+  .team-choice-main,
+  .team-invite-block {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .toast-stack {
+    bottom: 14px;
+    left: 14px;
+    right: 14px;
+  }
+
+  .toast {
+    width: 100%;
   }
 
   .toolbar {

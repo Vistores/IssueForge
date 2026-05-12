@@ -15,7 +15,7 @@ namespace GameIssueTracker.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IConfiguration configuration, AppDbContext db, PasswordService passwords) : ControllerBase
 {
-    private const string FrontendUrl = "http://localhost:4200/team";
+    private const string FrontendUrl = "http://localhost:4200/auth";
 
     [HttpGet("status")]
     public ActionResult<AuthStatusDto> GetStatus()

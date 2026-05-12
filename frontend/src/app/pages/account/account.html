@@ -1,0 +1,22 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Account</p>
+    <h1>Your profile</h1>
+    <p>Manage the signed-in portfolio demo account separately from team workspaces.</p>
+  </div>
+</section>
+
+@if (isLoading) {
+  <p class="state">Loading account...</p>
+} @else {
+  <section class="panel account-panel">
+    <div class="account-avatar">GI</div>
+    <div class="account-details">
+      <span>Name</span>
+      <strong>{{ auth?.name || 'Signed-in user' }}</strong>
+      <span>Email</span>
+      <strong>{{ auth?.email || 'No email claim returned' }}</strong>
+    </div>
+    <button class="button danger" type="button" (click)="logout()">Sign out</button>
+  </section>
+}

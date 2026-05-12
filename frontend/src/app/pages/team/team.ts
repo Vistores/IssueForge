@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthStatus, Team } from '../../core/models/api.models';
+import { Team } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
@@ -11,109 +10,34 @@ import { Toast } from '../../core/services/toast';
   templateUrl: './team.html'
 })
 export class TeamPage implements OnInit {
-  auth?: AuthStatus;
   teams: Team[] = [];
   activeTeamId: number | null = null;
   teamName = 'New QA Guild';
   inviteCode = '';
-  loginEmail = 'demo@game.local';
-  loginPassword = 'Demo123!';
-  registerName = '';
-  registerEmail = '';
-  registerPassword = '';
-  authMode: 'login' | 'register' = 'login';
-  isEntering = false;
   isLoading = true;
   error = '';
 
   constructor(
     private readonly api: Api,
-    private readonly toast: Toast,
-    private readonly router: Router
+    private readonly toast: Toast
   ) {}
 
   ngOnInit(): void {
-    this.load();
+    this.loadTeams();
   }
 
-  load(): void {
+  loadTeams(): void {
     this.isLoading = true;
     this.activeTeamId = this.api.getActiveTeamId();
-    this.api.getAuthStatus().subscribe({
-      next: auth => {
-        this.auth = auth;
-        if (!auth.isAuthenticated) {
-          this.teams = [];
-          this.isLoading = false;
-          return;
-        }
-
-        this.loadTeams();
-      },
-      error: () => {
-        this.error = 'Could not load auth status.';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  loadTeams(redirectWhenReady = false): void {
     this.api.getTeams().subscribe({
       next: teams => {
         this.teams = teams;
         this.activeTeamId = this.resolveActiveTeam(teams);
         this.isLoading = false;
-        if (redirectWhenReady && this.activeTeamId) {
-          this.enterWorkspace();
-        }
       },
       error: () => {
         this.error = 'Could not load teams.';
         this.isLoading = false;
-      }
-    });
-  }
-
-  login(): void {
-    this.api.login({ email: this.loginEmail, password: this.loginPassword }).subscribe({
-      next: auth => {
-        this.auth = auth;
-        this.toast.success('Signed in.');
-        this.loadTeams(true);
-      },
-      error: () => this.toast.error('Wrong email or password.')
-    });
-  }
-
-  register(): void {
-    this.api
-      .register({
-        displayName: this.registerName,
-        email: this.registerEmail,
-        password: this.registerPassword
-      })
-      .subscribe({
-        next: auth => {
-          this.auth = auth;
-          this.toast.success('Account created.');
-          this.loadTeams();
-        },
-        error: () => this.toast.error('Could not create account.')
-      });
-  }
-
-  loginWithGoogle(): void {
-    window.location.href = this.api.getGoogleLoginUrl(this.inviteCode || undefined);
-  }
-
-  logout(): void {
-    this.api.logout().subscribe({
-      next: () => {
-        this.api.setActiveTeamId(null);
-        this.auth = { isAuthenticated: false, googleConfigured: Boolean(this.auth?.googleConfigured) };
-        this.teams = [];
-        this.activeTeamId = null;
-        this.toast.success('Signed out.');
       }
     });
   }
@@ -148,19 +72,19 @@ export class TeamPage implements OnInit {
     this.api.setActiveTeamId(team.id);
   }
 
-  openWorkspace(): void {
-    if (!this.activeTeamId) {
-      return;
-    }
-
-    this.enterWorkspace();
-  }
-
-  copyInvite(team: Team): void {
+  copyInviteCode(team: Team): void {
     navigator.clipboard
       .writeText(team.inviteCode)
       .then(() => this.toast.success('Invite code copied.'))
       .catch(() => this.toast.error('Could not copy invite code.'));
+  }
+
+  copyInviteLink(team: Team): void {
+    const link = `${window.location.origin}/auth?inviteCode=${encodeURIComponent(team.inviteCode)}`;
+    navigator.clipboard
+      .writeText(link)
+      .then(() => this.toast.success('Invite link copied.'))
+      .catch(() => this.toast.error('Could not copy invite link.'));
   }
 
   private resolveActiveTeam(teams: Team[]): number | null {
@@ -173,10 +97,5 @@ export class TeamPage implements OnInit {
     const active = teams.some(team => team.id === existing) ? existing : teams[0].id;
     this.api.setActiveTeamId(active);
     return active;
-  }
-
-  private enterWorkspace(): void {
-    this.isEntering = true;
-    window.setTimeout(() => this.router.navigateByUrl('/'), 420);
   }
 }

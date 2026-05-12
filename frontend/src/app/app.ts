@@ -17,6 +17,6 @@ export class App {
   ) {}
 
   get isAccessRoute(): boolean {
-    return this.router.url.startsWith('/team');
+    return this.router.url.startsWith('/auth');
   }
 }
