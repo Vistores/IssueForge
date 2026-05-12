@@ -12,7 +12,10 @@ import {
   IssueStatus,
   Project,
   ProjectPayload,
-  Team
+  Team,
+  TeamMemberUpdatePayload,
+  MemberStats,
+  ActivityLog
 } from '../models/api.models';
 
 @Injectable({ providedIn: 'root' })
@@ -108,6 +111,10 @@ export class Api {
     return this.http.post<void>(`${this.baseUrl}/auth/logout`, {}, { withCredentials: true });
   }
 
+  updateAccount(payload: { avatarUrl?: string }) {
+    return this.http.put<AuthStatus>(`${this.baseUrl}/auth/account`, payload, { withCredentials: true });
+  }
+
   getGoogleLoginUrl(inviteCode?: string) {
     const params = inviteCode ? `?inviteCode=${encodeURIComponent(inviteCode)}` : '';
     return `${this.baseUrl}/auth/google${params}`;
@@ -123,6 +130,18 @@ export class Api {
 
   joinTeam(inviteCode: string) {
     return this.http.post<Team>(`${this.baseUrl}/teams/join`, { inviteCode }, { withCredentials: true });
+  }
+
+  updateTeamMember(teamId: number, memberId: number, payload: TeamMemberUpdatePayload) {
+    return this.http.put<void>(`${this.baseUrl}/teams/${teamId}/members/${memberId}`, payload, { withCredentials: true });
+  }
+
+  getTeamStats(teamId: number) {
+    return this.http.get<MemberStats[]>(`${this.baseUrl}/teams/${teamId}/stats`, { withCredentials: true });
+  }
+
+  getTeamActivity(teamId: number) {
+    return this.http.get<ActivityLog[]>(`${this.baseUrl}/teams/${teamId}/activity`, { withCredentials: true });
   }
 
   getActiveTeamId(): number | null {

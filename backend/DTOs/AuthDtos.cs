@@ -7,7 +7,14 @@ public record AuthStatusDto(
     bool GoogleConfigured,
     string? Name,
     string? Email,
-    int? UserId);
+    int? UserId,
+    string? AvatarUrl);
+
+public class AccountUpdateDto
+{
+    [MaxLength(2000)]
+    public string? AvatarUrl { get; set; }
+}
 
 public class RegisterDto
 {
@@ -38,7 +45,17 @@ public class LoginDto
     public string Password { get; set; } = string.Empty;
 }
 
-public record TeamMemberDto(int Id, string DisplayName, string Email, string Role, DateTime JoinedAt);
+public record TeamMemberDto(
+    int Id,
+    int UserId,
+    string DisplayName,
+    string Email,
+    string Role,
+    bool CanEditIssues,
+    bool CanAssignIssues,
+    int IssueLimit,
+    string? AvatarUrl,
+    DateTime JoinedAt);
 
 public record TeamDto(int Id, string Name, string InviteCode, DateTime CreatedAt, int ProjectCount, IEnumerable<TeamMemberDto> Members);
 
@@ -55,3 +72,35 @@ public class TeamJoinDto
     [MaxLength(12)]
     public string InviteCode { get; set; } = string.Empty;
 }
+
+public class TeamMemberUpdateDto
+{
+    [Required]
+    [MaxLength(40)]
+    public string Role { get; set; } = "Member";
+
+    public bool CanEditIssues { get; set; } = true;
+    public bool CanAssignIssues { get; set; }
+
+    [Range(0, 100)]
+    public int IssueLimit { get; set; } = 5;
+}
+
+public record MemberStatsDto(
+    int MemberId,
+    string DisplayName,
+    string Role,
+    string? AvatarUrl,
+    int AssignedIssues,
+    int OpenIssues,
+    int FixedIssues,
+    int CriticalIssues);
+
+public record ActivityLogDto(
+    int Id,
+    string Action,
+    string Details,
+    string? ActorName,
+    int? IssueId,
+    string? IssueTitle,
+    DateTime CreatedAt);

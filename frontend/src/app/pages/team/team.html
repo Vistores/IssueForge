@@ -71,9 +71,45 @@
 
           <div class="member-list">
             @for (member of team.members; track member.id) {
-              <div class="member-row">
-                <span>{{ member.displayName }}</span>
-                <small>{{ member.role }} &middot; {{ member.email || 'No email' }}</small>
+              <div class="member-row member-admin-row">
+                <div class="member-identity">
+                  <span class="avatar-chip">
+                    @if (member.avatarUrl) {
+                      <img [src]="member.avatarUrl" [alt]="member.displayName" />
+                    } @else {
+                      {{ member.displayName.slice(0, 1) }}
+                    }
+                  </span>
+                  <div>
+                    <span>{{ member.displayName }}</span>
+                    <small>{{ member.email || 'No email' }}</small>
+                  </div>
+                </div>
+
+                <div class="permission-grid">
+                  <label>
+                    <span>Role</span>
+                    <select [(ngModel)]="member.role">
+                      <option value="Owner">Owner</option>
+                      <option value="Manager">Manager</option>
+                      <option value="Member">Member</option>
+                      <option value="Viewer">Viewer</option>
+                    </select>
+                  </label>
+                  <label class="toggle-row">
+                    <input type="checkbox" [(ngModel)]="member.canEditIssues" />
+                    Edit
+                  </label>
+                  <label class="toggle-row">
+                    <input type="checkbox" [(ngModel)]="member.canAssignIssues" />
+                    Assign
+                  </label>
+                  <label>
+                    <span>Limit</span>
+                    <input type="number" min="0" [(ngModel)]="member.issueLimit" />
+                  </label>
+                  <button class="button ghost compact-button" type="button" (click)="updateMember(member)">Save</button>
+                </div>
               </div>
             }
           </div>
@@ -85,5 +121,59 @@
         </div>
       }
     </div>
+  </section>
+
+  <section class="team-insights-grid">
+    <article class="panel">
+      <div class="panel-header">
+        <h2>Member statistics</h2>
+        <span>{{ stats.length }} members</span>
+      </div>
+      <div class="stats-grid">
+        @for (stat of stats; track stat.memberId) {
+          <article class="stat-card">
+            <div class="member-identity">
+              <span class="avatar-chip large">
+                @if (stat.avatarUrl) {
+                  <img [src]="stat.avatarUrl" [alt]="stat.displayName" />
+                } @else {
+                  {{ stat.displayName.slice(0, 1) }}
+                }
+              </span>
+              <div>
+                <strong>{{ stat.displayName }}</strong>
+                <small>{{ stat.role }}</small>
+              </div>
+            </div>
+            <div class="mini-bars">
+              <span>Assigned <strong>{{ stat.assignedIssues }}</strong></span>
+              <span>Open <strong>{{ stat.openIssues }}</strong></span>
+              <span>Fixed <strong>{{ stat.fixedIssues }}</strong></span>
+              <span>Critical <strong>{{ stat.criticalIssues }}</strong></span>
+            </div>
+          </article>
+        } @empty {
+          <p class="muted">No member statistics yet.</p>
+        }
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <h2>Activity log</h2>
+        <span>{{ activity.length }} records</span>
+      </div>
+      <div class="activity-list">
+        @for (log of activity; track log.id) {
+          <article class="activity-item">
+            <strong>{{ log.action }}</strong>
+            <p>{{ log.details }}</p>
+            <small>{{ log.actorName || 'System' }} &middot; {{ log.createdAt | date: 'medium' }}</small>
+          </article>
+        } @empty {
+          <p class="muted">No activity yet.</p>
+        }
+      </div>
+    </article>
   </section>
 }

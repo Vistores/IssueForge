@@ -55,9 +55,21 @@ public static class DbSeeder
                 UserId = demoUser.Id,
                 DisplayName = demoUser.DisplayName,
                 Email = demoUser.Email,
-                Role = "Owner"
+                Role = "Owner",
+                CanEditIssues = true,
+                CanAssignIssues = true,
+                IssueLimit = 0
             });
 
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            var owner = await db.TeamMembers.FirstAsync(member => member.TeamId == team.Id && member.UserId == demoUser.Id);
+            owner.Role = "Owner";
+            owner.CanEditIssues = true;
+            owner.CanAssignIssues = true;
+            owner.IssueLimit = 0;
             await db.SaveChangesAsync();
         }
 
@@ -118,6 +130,29 @@ public static class DbSeeder
 
             await db.SaveChangesAsync();
         }
+
+        var demoMemberId = await db.TeamMembers
+            .Where(member => member.TeamId == team.Id && member.UserId == demoUser.Id)
+            .Select(member => member.Id)
+            .FirstAsync();
+
+        if (!await db.IssueAssignments.AnyAsync())
+        {
+            var issueIds = await db.Issues
+                .Where(issue => issue.Project != null && issue.Project.TeamId == team.Id)
+                .OrderBy(issue => issue.Id)
+                .Take(2)
+                .Select(issue => issue.Id)
+                .ToListAsync();
+
+            db.IssueAssignments.AddRange(issueIds.Select(issueId => new IssueAssignment
+            {
+                IssueId = issueId,
+                TeamMemberId = demoMemberId
+            }));
+
+            await db.SaveChangesAsync();
+        }
     }
 
     private static async Task EnsureTeamTablesAsync(AppDbContext db)
@@ -128,9 +163,11 @@ public static class DbSeeder
                 "DisplayName" TEXT NOT NULL,
                 "Email" TEXT NOT NULL,
                 "PasswordHash" TEXT NOT NULL,
+                "AvatarUrl" TEXT NULL,
                 "CreatedAt" TEXT NOT NULL
             );
             """);
+        await TrySqlAsync(db, """ALTER TABLE "Users" ADD COLUMN "AvatarUrl" TEXT NULL;""");
 
         await db.Database.ExecuteSqlRawAsync("""
             CREATE UNIQUE INDEX IF NOT EXISTS "IX_Users_Email" ON "Users" ("Email");
@@ -157,6 +194,9 @@ public static class DbSeeder
                 "DisplayName" TEXT NOT NULL,
                 "Email" TEXT NOT NULL,
                 "Role" TEXT NOT NULL,
+                "CanEditIssues" INTEGER NOT NULL DEFAULT 1,
+                "CanAssignIssues" INTEGER NOT NULL DEFAULT 0,
+                "IssueLimit" INTEGER NOT NULL DEFAULT 5,
                 "JoinedAt" TEXT NOT NULL,
                 CONSTRAINT "FK_TeamMembers_Teams_TeamId" FOREIGN KEY ("TeamId") REFERENCES "Teams" ("Id") ON DELETE CASCADE
             );
@@ -164,6 +204,9 @@ public static class DbSeeder
 
         await TrySqlAsync(db, """ALTER TABLE "Projects" ADD COLUMN "TeamId" INTEGER NOT NULL DEFAULT 1;""");
         await TrySqlAsync(db, """ALTER TABLE "TeamMembers" ADD COLUMN "UserId" INTEGER NOT NULL DEFAULT 1;""");
+        await TrySqlAsync(db, """ALTER TABLE "TeamMembers" ADD COLUMN "CanEditIssues" INTEGER NOT NULL DEFAULT 1;""");
+        await TrySqlAsync(db, """ALTER TABLE "TeamMembers" ADD COLUMN "CanAssignIssues" INTEGER NOT NULL DEFAULT 0;""");
+        await TrySqlAsync(db, """ALTER TABLE "TeamMembers" ADD COLUMN "IssueLimit" INTEGER NOT NULL DEFAULT 5;""");
 
         await db.Database.ExecuteSqlRawAsync("""
             CREATE INDEX IF NOT EXISTS "IX_TeamMembers_TeamId" ON "TeamMembers" ("TeamId");
@@ -175,6 +218,40 @@ public static class DbSeeder
 
         await db.Database.ExecuteSqlRawAsync("""
             CREATE INDEX IF NOT EXISTS "IX_Projects_TeamId" ON "Projects" ("TeamId");
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "IssueAssignments" (
+                "IssueId" INTEGER NOT NULL,
+                "TeamMemberId" INTEGER NOT NULL,
+                "AssignedAt" TEXT NOT NULL,
+                CONSTRAINT "PK_IssueAssignments" PRIMARY KEY ("IssueId", "TeamMemberId"),
+                CONSTRAINT "FK_IssueAssignments_Issues_IssueId" FOREIGN KEY ("IssueId") REFERENCES "Issues" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_IssueAssignments_TeamMembers_TeamMemberId" FOREIGN KEY ("TeamMemberId") REFERENCES "TeamMembers" ("Id") ON DELETE CASCADE
+            );
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE INDEX IF NOT EXISTS "IX_IssueAssignments_TeamMemberId" ON "IssueAssignments" ("TeamMemberId");
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "ActivityLogs" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_ActivityLogs" PRIMARY KEY AUTOINCREMENT,
+                "TeamId" INTEGER NOT NULL,
+                "IssueId" INTEGER NULL,
+                "ActorMemberId" INTEGER NULL,
+                "Action" TEXT NOT NULL,
+                "Details" TEXT NOT NULL,
+                "CreatedAt" TEXT NOT NULL,
+                CONSTRAINT "FK_ActivityLogs_Teams_TeamId" FOREIGN KEY ("TeamId") REFERENCES "Teams" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_ActivityLogs_Issues_IssueId" FOREIGN KEY ("IssueId") REFERENCES "Issues" ("Id") ON DELETE SET NULL,
+                CONSTRAINT "FK_ActivityLogs_TeamMembers_ActorMemberId" FOREIGN KEY ("ActorMemberId") REFERENCES "TeamMembers" ("Id") ON DELETE SET NULL
+            );
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE INDEX IF NOT EXISTS "IX_ActivityLogs_TeamId" ON "ActivityLogs" ("TeamId");
             """);
     }
 

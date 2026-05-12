@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthStatus } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
@@ -6,10 +7,12 @@ import { Toast } from '../../core/services/toast';
 
 @Component({
   selector: 'app-account',
+  imports: [FormsModule],
   templateUrl: './account.html'
 })
 export class AccountPage implements OnInit {
   auth?: AuthStatus;
+  avatarUrl = '';
   isLoading = true;
 
   constructor(
@@ -22,9 +25,21 @@ export class AccountPage implements OnInit {
     this.api.getAuthStatus().subscribe({
       next: auth => {
         this.auth = auth;
+        this.avatarUrl = auth.avatarUrl ?? '';
         this.isLoading = false;
       },
       error: () => (this.isLoading = false)
+    });
+  }
+
+  saveAvatar(): void {
+    this.api.updateAccount({ avatarUrl: this.avatarUrl }).subscribe({
+      next: auth => {
+        this.auth = auth;
+        this.avatarUrl = auth.avatarUrl ?? '';
+        this.toast.success('Profile photo updated.');
+      },
+      error: () => this.toast.error('Could not update profile photo.')
     });
   }
 

@@ -18,4 +18,5 @@ public class Team
 
     public ICollection<Project> Projects { get; set; } = new List<Project>();
     public ICollection<TeamMember> Members { get; set; } = new List<TeamMember>();
+    public ICollection<ActivityLog> ActivityLogs { get; set; } = new List<ActivityLog>();
 }

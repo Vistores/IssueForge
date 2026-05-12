@@ -30,6 +30,20 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor, AppDbC
         return userId is not null && await db.TeamMembers.AnyAsync(member => member.TeamId == teamId && member.UserId == userId);
     }
 
+    public async Task<int?> GetCurrentMemberIdAsync(int teamId)
+    {
+        var userId = UserId;
+        if (userId is null)
+        {
+            return null;
+        }
+
+        return await db.TeamMembers
+            .Where(member => member.TeamId == teamId && member.UserId == userId)
+            .Select(member => (int?)member.Id)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task<int?> GetActiveTeamIdAsync()
     {
         var teamId = RequestedTeamId;

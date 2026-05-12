@@ -5,7 +5,6 @@ using GameIssueTracker.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace GameIssueTracker.Api.Controllers;
 
@@ -44,11 +43,15 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         }
 
         var issues = await query
+            .Include(issue => issue.Project)
+            .Include(issue => issue.Comments)
+            .Include(issue => issue.Assignments)
+            .ThenInclude(assignment => assignment.TeamMember)
+            .ThenInclude(member => member!.User)
             .OrderByDescending(issue => issue.UpdatedAt)
-            .Select(ToIssueDto)
             .ToListAsync();
 
-        return Ok(issues);
+        return Ok(issues.Select(ToIssueDto));
     }
 
     [HttpGet("{id:int}")]
@@ -61,11 +64,15 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         }
 
         var issue = await db.Issues
+            .Include(issue => issue.Project)
+            .Include(issue => issue.Comments)
+            .Include(issue => issue.Assignments)
+            .ThenInclude(assignment => assignment.TeamMember)
+            .ThenInclude(member => member!.User)
             .Where(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId)
-            .Select(ToIssueDto)
             .FirstOrDefaultAsync();
 
-        return issue is null ? NotFound() : Ok(issue);
+        return issue is null ? NotFound() : Ok(ToIssueDto(issue));
     }
 
     [HttpPost]
@@ -97,13 +104,20 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
 
         db.Issues.Add(issue);
         await db.SaveChangesAsync();
+        await ReplaceAssignments(issue, dto.AssignedMemberIds, teamId.Value);
+        await AddLog(teamId.Value, issue.Id, "Issue created", $"Created issue \"{issue.Title}\".");
+        await db.SaveChangesAsync();
 
         var result = await db.Issues
+            .Include(savedIssue => savedIssue.Project)
+            .Include(savedIssue => savedIssue.Comments)
+            .Include(savedIssue => savedIssue.Assignments)
+            .ThenInclude(assignment => assignment.TeamMember)
+            .ThenInclude(member => member!.User)
             .Where(savedIssue => savedIssue.Id == issue.Id)
-            .Select(ToIssueDto)
             .FirstAsync();
 
-        return CreatedAtAction(nameof(GetIssue), new { id = issue.Id }, result);
+        return CreatedAtAction(nameof(GetIssue), new { id = issue.Id }, ToIssueDto(result));
     }
 
     [HttpPut("{id:int}")]
@@ -136,6 +150,8 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         issue.Status = dto.Status;
         issue.Priority = dto.Priority;
         issue.UpdatedAt = DateTime.UtcNow;
+        await ReplaceAssignments(issue, dto.AssignedMemberIds, teamId.Value);
+        await AddLog(teamId.Value, issue.Id, "Issue updated", $"Updated issue \"{issue.Title}\".");
 
         await db.SaveChangesAsync();
 
@@ -161,13 +177,53 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         }
 
         db.Issues.Remove(issue);
+        await AddLog(teamId.Value, issue.Id, "Issue deleted", $"Deleted issue \"{issue.Title}\".");
         await db.SaveChangesAsync();
 
         return NoContent();
     }
 
-    private static readonly Expression<Func<Issue, IssueDto>> ToIssueDto = issue =>
-        new(
+    private async Task ReplaceAssignments(Issue issue, IEnumerable<int> assignedMemberIds, int teamId)
+    {
+        var ids = assignedMemberIds.Distinct().ToList();
+        var validIds = await db.TeamMembers
+            .Where(member => member.TeamId == teamId && ids.Contains(member.Id))
+            .Select(member => member.Id)
+            .ToListAsync();
+
+        var existing = await db.IssueAssignments
+            .Where(assignment => assignment.IssueId == issue.Id)
+            .ToListAsync();
+
+        db.IssueAssignments.RemoveRange(existing.Where(assignment => !validIds.Contains(assignment.TeamMemberId)));
+
+        foreach (var memberId in validIds.Except(existing.Select(assignment => assignment.TeamMemberId)))
+        {
+            db.IssueAssignments.Add(new IssueAssignment
+            {
+                IssueId = issue.Id,
+                TeamMemberId = memberId,
+                AssignedAt = DateTime.UtcNow
+            });
+        }
+    }
+
+    private async Task AddLog(int teamId, int? issueId, string action, string details)
+    {
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            TeamId = teamId,
+            IssueId = issueId,
+            ActorMemberId = await currentUser.GetCurrentMemberIdAsync(teamId),
+            Action = action,
+            Details = details,
+            CreatedAt = DateTime.UtcNow
+        });
+    }
+
+    private static IssueDto ToIssueDto(Issue issue)
+    {
+        return new IssueDto(
             issue.Id,
             issue.Title,
             issue.Description,
@@ -177,5 +233,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
             issue.Priority,
             issue.CreatedAt,
             issue.UpdatedAt,
-            issue.Comments.Count);
+            issue.Comments.Count,
+            issue.Assignments.Select(assignment => new IssueAssigneeDto(
+                assignment.TeamMemberId,
+                assignment.TeamMember == null ? "Team member" : assignment.TeamMember.DisplayName,
+                assignment.TeamMember == null ? "Member" : assignment.TeamMember.Role,
+                assignment.TeamMember == null || assignment.TeamMember.User == null ? null : assignment.TeamMember.User.AvatarUrl)));
+    }
 }

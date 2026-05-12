@@ -1,16 +1,19 @@
 import { Component, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Team } from '../../core/models/api.models';
+import { ActivityLog, MemberStats, Team, TeamMember } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
 @Component({
   selector: 'app-team',
-  imports: [FormsModule],
+  imports: [DatePipe, FormsModule],
   templateUrl: './team.html'
 })
 export class TeamPage implements OnInit {
   teams: Team[] = [];
+  stats: MemberStats[] = [];
+  activity: ActivityLog[] = [];
   activeTeamId: number | null = null;
   teamName = 'New QA Guild';
   inviteCode = '';
@@ -34,6 +37,7 @@ export class TeamPage implements OnInit {
         this.teams = teams;
         this.activeTeamId = this.resolveActiveTeam(teams);
         this.isLoading = false;
+        this.loadTeamInsights();
       },
       error: () => {
         this.error = 'Could not load teams.';
@@ -70,6 +74,29 @@ export class TeamPage implements OnInit {
   selectTeam(team: Team): void {
     this.activeTeamId = team.id;
     this.api.setActiveTeamId(team.id);
+    this.loadTeamInsights();
+  }
+
+  updateMember(member: TeamMember): void {
+    const teamId = this.activeTeamId;
+    if (!teamId) {
+      return;
+    }
+
+    this.api
+      .updateTeamMember(teamId, member.id, {
+        role: member.role,
+        canEditIssues: member.canEditIssues,
+        canAssignIssues: member.canAssignIssues,
+        issueLimit: Number(member.issueLimit)
+      })
+      .subscribe({
+        next: () => {
+          this.toast.success('Member permissions updated.');
+          this.loadTeamInsights();
+        },
+        error: () => this.toast.error('Could not update member.')
+      });
   }
 
   copyInviteCode(team: Team): void {
@@ -97,5 +124,16 @@ export class TeamPage implements OnInit {
     const active = teams.some(team => team.id === existing) ? existing : teams[0].id;
     this.api.setActiveTeamId(active);
     return active;
+  }
+
+  private loadTeamInsights(): void {
+    if (!this.activeTeamId) {
+      this.stats = [];
+      this.activity = [];
+      return;
+    }
+
+    this.api.getTeamStats(this.activeTeamId).subscribe({ next: stats => (this.stats = stats) });
+    this.api.getTeamActivity(this.activeTeamId).subscribe({ next: activity => (this.activity = activity) });
   }
 }

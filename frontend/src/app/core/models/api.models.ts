@@ -24,6 +24,14 @@ export interface Issue {
   createdAt: string;
   updatedAt: string;
   commentCount: number;
+  assignees: IssueAssignee[];
+}
+
+export interface IssueAssignee {
+  memberId: number;
+  displayName: string;
+  role: string;
+  avatarUrl?: string;
 }
 
 export interface IssuePayload {
@@ -32,6 +40,7 @@ export interface IssuePayload {
   projectId: number;
   status: IssueStatus;
   priority: IssuePriority;
+  assignedMemberIds: number[];
 }
 
 export interface Comment {
@@ -61,6 +70,7 @@ export interface AuthStatus {
   name?: string;
   email?: string;
   userId?: number;
+  avatarUrl?: string;
 }
 
 export interface AuthPayload {
@@ -71,9 +81,14 @@ export interface AuthPayload {
 
 export interface TeamMember {
   id: number;
+  userId: number;
   displayName: string;
   email: string;
   role: string;
+  canEditIssues: boolean;
+  canAssignIssues: boolean;
+  issueLimit: number;
+  avatarUrl?: string;
   joinedAt: string;
 }
 
@@ -84,4 +99,32 @@ export interface Team {
   createdAt: string;
   projectCount: number;
   members: TeamMember[];
+}
+
+export interface TeamMemberUpdatePayload {
+  role: string;
+  canEditIssues: boolean;
+  canAssignIssues: boolean;
+  issueLimit: number;
+}
+
+export interface MemberStats {
+  memberId: number;
+  displayName: string;
+  role: string;
+  avatarUrl?: string;
+  assignedIssues: number;
+  openIssues: number;
+  fixedIssues: number;
+  criticalIssues: number;
+}
+
+export interface ActivityLog {
+  id: number;
+  action: string;
+  details: string;
+  actorName?: string;
+  issueId?: number;
+  issueTitle?: string;
+  createdAt: string;
 }

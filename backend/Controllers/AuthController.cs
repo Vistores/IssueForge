@@ -28,7 +28,10 @@ public class AuthController(IConfiguration configuration, AppDbContext db, Passw
             googleConfigured,
             User.Identity?.Name,
             User.FindFirstValue(ClaimTypes.Email),
-            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null));
+            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null,
+            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var avatarUserId)
+                ? db.Users.Where(user => user.Id == avatarUserId).Select(user => user.AvatarUrl).FirstOrDefault()
+                : null));
     }
 
     [HttpPost("register")]
@@ -53,7 +56,7 @@ public class AuthController(IConfiguration configuration, AppDbContext db, Passw
         await db.SaveChangesAsync();
         await SignInUser(user);
 
-        return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id));
+        return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id, user.AvatarUrl));
     }
 
     [HttpPost("login")]
@@ -68,7 +71,7 @@ public class AuthController(IConfiguration configuration, AppDbContext db, Passw
         }
 
         await SignInUser(user);
-        return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id));
+        return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id, user.AvatarUrl));
     }
 
     [HttpGet("google")]
@@ -92,6 +95,26 @@ public class AuthController(IConfiguration configuration, AppDbContext db, Passw
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return NoContent();
+    }
+
+    [HttpPut("account")]
+    public async Task<ActionResult<AuthStatusDto>> UpdateAccount(AccountUpdateDto dto)
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await db.Users.FindAsync(userId);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        user.AvatarUrl = string.IsNullOrWhiteSpace(dto.AvatarUrl) ? null : dto.AvatarUrl.Trim();
+        await db.SaveChangesAsync();
+
+        return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id, user.AvatarUrl));
     }
 
     private async Task SignInUser(AppUser user)

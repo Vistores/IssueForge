@@ -13,7 +13,10 @@ public record IssueDto(
     IssuePriority Priority,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    int CommentCount);
+    int CommentCount,
+    IEnumerable<IssueAssigneeDto> Assignees);
+
+public record IssueAssigneeDto(int MemberId, string DisplayName, string Role, string? AvatarUrl);
 
 public class IssueCreateDto
 {
@@ -30,6 +33,8 @@ public class IssueCreateDto
 
     public IssueStatus Status { get; set; } = IssueStatus.Open;
     public IssuePriority Priority { get; set; } = IssuePriority.Medium;
+
+    public List<int> AssignedMemberIds { get; set; } = [];
 }
 
 public class IssueUpdateDto : IssueCreateDto;

@@ -69,7 +69,8 @@ export class IssueForm implements OnInit {
       description: this.form.value.description ?? '',
       projectId: Number(this.form.value.projectId),
       status: this.form.value.status ?? 'Open',
-      priority: this.form.value.priority ?? 'Medium'
+      priority: this.form.value.priority ?? 'Medium',
+      assignedMemberIds: []
     };
 
     if (this.issueId) {

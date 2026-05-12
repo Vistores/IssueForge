@@ -18,6 +18,9 @@ public class AppUser
     [MaxLength(260)]
     public string PasswordHash { get; set; } = string.Empty;
 
+    [MaxLength(2000)]
+    public string? AvatarUrl { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<TeamMember> TeamMemberships { get; set; } = new List<TeamMember>();

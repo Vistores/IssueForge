@@ -73,6 +73,14 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
         };
 
         db.Projects.Add(project);
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            TeamId = teamId.Value,
+            ActorMemberId = await currentUser.GetCurrentMemberIdAsync(teamId.Value),
+            Action = "Project created",
+            Details = $"Created project \"{project.Name}\".",
+            CreatedAt = DateTime.UtcNow
+        });
         await db.SaveChangesAsync();
 
         var result = new ProjectDto(project.Id, project.Name, project.Description, 0);
@@ -97,6 +105,14 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
 
         project.Name = dto.Name.Trim();
         project.Description = dto.Description?.Trim();
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            TeamId = teamId.Value,
+            ActorMemberId = await currentUser.GetCurrentMemberIdAsync(teamId.Value),
+            Action = "Project updated",
+            Details = $"Updated project \"{project.Name}\".",
+            CreatedAt = DateTime.UtcNow
+        });
 
         await db.SaveChangesAsync();
 
@@ -120,6 +136,14 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
         }
 
         db.Projects.Remove(project);
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            TeamId = teamId.Value,
+            ActorMemberId = await currentUser.GetCurrentMemberIdAsync(teamId.Value),
+            Action = "Project deleted",
+            Details = $"Deleted project \"{project.Name}\".",
+            CreatedAt = DateTime.UtcNow
+        });
         await db.SaveChangesAsync();
 
         return NoContent();

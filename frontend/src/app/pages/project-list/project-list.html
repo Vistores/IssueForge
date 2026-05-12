@@ -4,7 +4,7 @@
     <h1>Tracked project ledger</h1>
     <p>Organize issue work by product, prototype, internal tool, game module or QA area.</p>
   </div>
-  <a class="button primary" routerLink="/projects/new">New project</a>
+  <button class="button primary" type="button" (click)="openCreateModal()">New project</button>
 </section>
 
 @if (isLoading) {
@@ -30,7 +30,7 @@
           <td>{{ project.description || 'No description' }}</td>
           <td>{{ project.issueCount }}</td>
           <td class="actions">
-            <a class="button ghost" [routerLink]="['/projects', project.id, 'edit']">Edit</a>
+            <button class="button ghost" type="button" (click)="openEditModal(project)">Edit</button>
             <button class="button danger" type="button" (click)="deleteProject(project)">Delete</button>
           </td>
         </tr>
@@ -42,3 +42,34 @@
     </tbody>
   </table>
 </section>
+
+@if (modalProject !== undefined) {
+  <div class="modal-backdrop" (click)="closeModal()"></div>
+  <section class="center-modal compact-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Project form</p>
+        <h2>{{ modalProject ? 'Edit project' : 'Create project' }}</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeModal()">Close</button>
+    </header>
+
+    <div class="form compact">
+      <label>
+        <span>Name</span>
+        <input [(ngModel)]="formModel.name" placeholder="Space Raiders" />
+      </label>
+      <label>
+        <span>Description</span>
+        <textarea [(ngModel)]="formModel.description" rows="5" placeholder="Short project description"></textarea>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="button ghost" type="button" (click)="closeModal()">Cancel</button>
+      <button class="button primary" type="button" [disabled]="isSaving" (click)="saveProject()">
+        {{ isSaving ? 'Saving...' : 'Save project' }}
+      </button>
+    </div>
+  </section>
+}

@@ -24,4 +24,5 @@ public class Issue
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<IssueAssignment> Assignments { get; set; } = new List<IssueAssignment>();
 }

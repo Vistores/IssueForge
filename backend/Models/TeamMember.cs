@@ -22,5 +22,11 @@ public class TeamMember
     [MaxLength(40)]
     public string Role { get; set; } = "Member";
 
+    public bool CanEditIssues { get; set; } = true;
+    public bool CanAssignIssues { get; set; }
+    public int IssueLimit { get; set; } = 5;
+
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<IssueAssignment> IssueAssignments { get; set; } = new List<IssueAssignment>();
 }

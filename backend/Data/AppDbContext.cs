@@ -11,6 +11,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AppUser> Users => Set<AppUser>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
+    public DbSet<IssueAssignment> IssueAssignments => Set<IssueAssignment>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +36,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasMany(issue => issue.Comments)
             .WithOne(comment => comment.Issue)
             .HasForeignKey(comment => comment.IssueId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<IssueAssignment>()
+            .HasKey(assignment => new { assignment.IssueId, assignment.TeamMemberId });
+
+        modelBuilder.Entity<IssueAssignment>()
+            .HasOne(assignment => assignment.Issue)
+            .WithMany(issue => issue.Assignments)
+            .HasForeignKey(assignment => assignment.IssueId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<IssueAssignment>()
+            .HasOne(assignment => assignment.TeamMember)
+            .WithMany(member => member.IssueAssignments)
+            .HasForeignKey(assignment => assignment.TeamMemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Issue>()
@@ -63,5 +80,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<TeamMember>()
             .HasIndex(member => new { member.TeamId, member.UserId })
             .IsUnique();
+
+        modelBuilder.Entity<ActivityLog>()
+            .HasOne(log => log.Team)
+            .WithMany(team => team.ActivityLogs)
+            .HasForeignKey(log => log.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ActivityLog>()
+            .HasOne(log => log.Issue)
+            .WithMany()
+            .HasForeignKey(log => log.IssueId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -24,6 +24,7 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
 
         var teams = await db.Teams
             .Include(team => team.Members)
+            .ThenInclude(member => member.User)
             .Include(team => team.Projects)
             .Where(team => team.Members.Any(member => member.UserId == userId))
             .OrderBy(team => team.Name)
@@ -56,13 +57,17 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
             UserId = user.Id,
             DisplayName = user.DisplayName,
             Email = user.Email,
-            Role = "Owner"
+            Role = "Owner",
+            CanEditIssues = true,
+            CanAssignIssues = true,
+            IssueLimit = 0
         });
 
         await db.SaveChangesAsync();
 
         var result = await db.Teams
             .Include(savedTeam => savedTeam.Members)
+            .ThenInclude(member => member.User)
             .Include(savedTeam => savedTeam.Projects)
             .FirstAsync(savedTeam => savedTeam.Id == team.Id);
 
@@ -81,6 +86,7 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
         var normalizedCode = dto.InviteCode.Trim().ToUpperInvariant();
         var team = await db.Teams
             .Include(team => team.Members)
+            .ThenInclude(member => member.User)
             .Include(team => team.Projects)
             .FirstOrDefaultAsync(team => team.InviteCode == normalizedCode);
 
@@ -105,6 +111,79 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
         }
 
         return Ok(ToTeamDto(team));
+    }
+
+    [HttpPut("{teamId:int}/members/{memberId:int}")]
+    public async Task<IActionResult> UpdateMember(int teamId, int memberId, TeamMemberUpdateDto dto)
+    {
+        if (!await currentUser.IsTeamMemberAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var member = await db.TeamMembers.FirstOrDefaultAsync(member => member.Id == memberId && member.TeamId == teamId);
+        if (member is null)
+        {
+            return NotFound();
+        }
+
+        member.Role = dto.Role.Trim();
+        member.CanEditIssues = dto.CanEditIssues;
+        member.CanAssignIssues = dto.CanAssignIssues;
+        member.IssueLimit = dto.IssueLimit;
+        await AddLog(teamId, "Member permissions", $"{member.DisplayName} is now {member.Role}.");
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpGet("{teamId:int}/stats")]
+    public async Task<ActionResult<IEnumerable<MemberStatsDto>>> GetStats(int teamId)
+    {
+        if (!await currentUser.IsTeamMemberAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var stats = await db.TeamMembers
+            .Where(member => member.TeamId == teamId)
+            .Select(member => new MemberStatsDto(
+                member.Id,
+                member.DisplayName,
+                member.Role,
+                member.User == null ? null : member.User.AvatarUrl,
+                member.IssueAssignments.Count,
+                member.IssueAssignments.Count(assignment => assignment.Issue != null && assignment.Issue.Status != IssueStatus.Fixed && assignment.Issue.Status != IssueStatus.Rejected),
+                member.IssueAssignments.Count(assignment => assignment.Issue != null && assignment.Issue.Status == IssueStatus.Fixed),
+                member.IssueAssignments.Count(assignment => assignment.Issue != null && assignment.Issue.Priority == IssuePriority.Critical)))
+            .ToListAsync();
+
+        return Ok(stats);
+    }
+
+    [HttpGet("{teamId:int}/activity")]
+    public async Task<ActionResult<IEnumerable<ActivityLogDto>>> GetActivity(int teamId)
+    {
+        if (!await currentUser.IsTeamMemberAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var logs = await db.ActivityLogs
+            .Where(log => log.TeamId == teamId)
+            .OrderByDescending(log => log.CreatedAt)
+            .Take(50)
+            .Select(log => new ActivityLogDto(
+                log.Id,
+                log.Action,
+                log.Details,
+                log.ActorMember == null ? null : log.ActorMember.DisplayName,
+                log.IssueId,
+                log.Issue == null ? null : log.Issue.Title,
+                log.CreatedAt))
+            .ToListAsync();
+
+        return Ok(logs);
     }
 
     private async Task<string> GenerateInviteCode()
@@ -132,9 +211,26 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
                 .OrderBy(member => member.JoinedAt)
                 .Select(member => new TeamMemberDto(
                     member.Id,
+                    member.UserId,
                     member.DisplayName,
                     member.Email,
                     member.Role,
+                    member.CanEditIssues,
+                    member.CanAssignIssues,
+                    member.IssueLimit,
+                    member.User == null ? null : member.User.AvatarUrl,
                     member.JoinedAt)));
+    }
+
+    private async Task AddLog(int teamId, string action, string details)
+    {
+        db.ActivityLogs.Add(new ActivityLog
+        {
+            TeamId = teamId,
+            ActorMemberId = await currentUser.GetCurrentMemberIdAsync(teamId),
+            Action = action,
+            Details = details,
+            CreatedAt = DateTime.UtcNow
+        });
     }
 }
