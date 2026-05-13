@@ -2,7 +2,7 @@
 
 IssueForge is a portfolio-ready full-stack issue and work tracking application for small teams. It helps organize projects, work items, comments, assignments, team roles, activity logs and member statistics in one private workspace.
 
-The project is built to demonstrate practical Junior/Trainee Angular + ASP.NET Core development skills with a clean monorepo structure, real CRUD flows, authentication, team-based data separation, SQLite persistence and a polished custom UI.
+It combines a compact issue board, team workspaces, permissions, comments, assignments, attachments and activity tracking in a clean Angular + ASP.NET Core monorepo.
 
 ## Tech Stack
 
@@ -27,6 +27,7 @@ The project is built to demonstrate practical Junior/Trainee Angular + ASP.NET C
 - Project CRUD: create, edit, delete and list projects
 - Issue CRUD: create, edit, delete and list issues
 - Issue preview modal with description, status, priority, assignees and comments
+- Issue attachments for screenshots, media, documents and text files
 - Add and delete comments directly from the issue preview modal
 - Kanban-style board with drag-and-drop status updates
 - Table view with inline status and priority editing
@@ -244,7 +245,7 @@ Issue priorities:
 - Production-grade JWT or external identity provider setup
 - Refresh tokens and stricter role-based authorization policies
 - Pagination, search and server-side sorting
-- File attachments for screenshots and reproduction assets
+- Attachment previews with external object storage support
 - Rich text comments
 - Notifications for assignment and status changes
 - Unit and integration tests

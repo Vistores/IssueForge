@@ -236,6 +236,23 @@ public static class DbSeeder
             """);
 
         await db.Database.ExecuteSqlRawAsync("""
+            CREATE TABLE IF NOT EXISTS "IssueAttachments" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_IssueAttachments" PRIMARY KEY AUTOINCREMENT,
+                "IssueId" INTEGER NOT NULL,
+                "FileName" TEXT NOT NULL,
+                "ContentType" TEXT NOT NULL,
+                "Size" INTEGER NOT NULL,
+                "DataUrl" TEXT NOT NULL,
+                "CreatedAt" TEXT NOT NULL,
+                CONSTRAINT "FK_IssueAttachments_Issues_IssueId" FOREIGN KEY ("IssueId") REFERENCES "Issues" ("Id") ON DELETE CASCADE
+            );
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
+            CREATE INDEX IF NOT EXISTS "IX_IssueAttachments_IssueId" ON "IssueAttachments" ("IssueId");
+            """);
+
+        await db.Database.ExecuteSqlRawAsync("""
             CREATE TABLE IF NOT EXISTS "ActivityLogs" (
                 "Id" INTEGER NOT NULL CONSTRAINT "PK_ActivityLogs" PRIMARY KEY AUTOINCREMENT,
                 "TeamId" INTEGER NOT NULL,

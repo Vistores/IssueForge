@@ -12,6 +12,7 @@
     <label>
       <span>Team</span>
       <select [ngModel]="filters.teamId" (ngModelChange)="changeTeamFilter($event)">
+        <option value="">All teams</option>
         @for (team of teams; track team.id) {
           <option [ngValue]="team.id">{{ team.name }}</option>
         }
@@ -250,6 +251,20 @@
         </div>
         <p class="description preview-description">{{ selectedIssue.description }}</p>
 
+        @if (selectedIssue.attachments.length) {
+          <div class="attachment-preview">
+            <strong>Attachments</strong>
+            <div class="attachment-list">
+              @for (attachment of selectedIssue.attachments; track attachment.id) {
+                <a class="attachment-item" [href]="attachment.dataUrl" [download]="attachment.fileName" target="_blank" rel="noopener">
+                  <span>{{ attachment.fileName }}</span>
+                  <small>{{ formatFileSize(attachment.size) }}</small>
+                </a>
+              }
+            </div>
+          </div>
+        }
+
         <dl class="drawer-meta">
           <div>
             <dt>Status</dt>
@@ -424,7 +439,7 @@
     <div class="form compact">
       <label>
         <span>Title</span>
-        <input [(ngModel)]="issueForm.title" placeholder="Player ship clips through asteroid edge" />
+        <input [(ngModel)]="issueForm.title" name="issueTitle" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Player ship clips through asteroid edge" />
       </label>
       <label>
         <span>Description</span>
@@ -474,6 +489,26 @@
             </label>
           }
         </div>
+      </div>
+
+      <div class="attachment-uploader">
+        <div>
+          <strong>Attachments</strong>
+          <small>Screenshots, media, documents or text files. Up to 8 files, 3 MB each.</small>
+        </div>
+        <input #issueFiles type="file" multiple hidden (change)="handleIssueFiles($event)" />
+        <button class="button ghost" type="button" (click)="issueFiles.click()">Add files</button>
+        @if (issueForm.attachments.length) {
+          <div class="attachment-list">
+            @for (attachment of issueForm.attachments; track attachment.fileName + attachment.size) {
+              <div class="attachment-item">
+                <span>{{ attachment.fileName }}</span>
+                <small>{{ formatFileSize(attachment.size) }}</small>
+                <button class="button danger compact-button" type="button" (click)="removeIssueAttachment(attachment.fileName)">Remove</button>
+              </div>
+            }
+          </div>
+        }
       </div>
     </div>
 

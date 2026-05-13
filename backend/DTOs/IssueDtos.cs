@@ -14,9 +14,29 @@ public record IssueDto(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     int CommentCount,
-    IEnumerable<IssueAssigneeDto> Assignees);
+    IEnumerable<IssueAssigneeDto> Assignees,
+    IEnumerable<IssueAttachmentDto> Attachments);
 
 public record IssueAssigneeDto(int MemberId, string DisplayName, string Role, string? AvatarUrl);
+public record IssueAttachmentDto(int Id, string FileName, string ContentType, long Size, string DataUrl, DateTime CreatedAt);
+
+public class IssueAttachmentCreateDto
+{
+    [Required]
+    [MaxLength(180)]
+    public string FileName { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(120)]
+    public string ContentType { get; set; } = string.Empty;
+
+    [Range(1, 3000000)]
+    public long Size { get; set; }
+
+    [Required]
+    [MaxLength(2000000)]
+    public string DataUrl { get; set; } = string.Empty;
+}
 
 public class IssueCreateDto
 {
@@ -35,6 +55,7 @@ public class IssueCreateDto
     public IssuePriority Priority { get; set; } = IssuePriority.Medium;
 
     public List<int> AssignedMemberIds { get; set; } = [];
+    public List<IssueAttachmentCreateDto>? Attachments { get; set; }
 }
 
 public class IssueUpdateDto : IssueCreateDto;

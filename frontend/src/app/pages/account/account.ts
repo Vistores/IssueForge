@@ -19,6 +19,8 @@ export class AccountPage implements OnInit {
   avatarScale = 1;
   avatarOffsetX = 0;
   avatarOffsetY = 0;
+  avatarNaturalWidth = 1;
+  avatarNaturalHeight = 1;
   isDeleteAccountModalOpen = false;
 
   constructor(
@@ -129,6 +131,10 @@ export class AccountPage implements OnInit {
       return;
     }
 
+    this.buildCroppedAvatar();
+  }
+
+  private buildCroppedAvatar(): void {
     const image = new Image();
     image.onload = () => {
       const size = 192;
@@ -151,8 +157,9 @@ export class AccountPage implements OnInit {
       const baseScale = Math.max(size / image.width, size / image.height);
       const drawWidth = image.width * baseScale * this.avatarScale;
       const drawHeight = image.height * baseScale * this.avatarScale;
-      const x = (size - drawWidth) / 2 + this.avatarOffsetX * 2;
-      const y = (size - drawHeight) / 2 + this.avatarOffsetY * 2;
+      const previewRatio = size / 260;
+      const x = (size - drawWidth) / 2 + this.avatarOffsetX * previewRatio;
+      const y = (size - drawHeight) / 2 + this.avatarOffsetY * previewRatio;
       context.drawImage(image, x, y, drawWidth, drawHeight);
       context.restore();
 
@@ -176,6 +183,13 @@ export class AccountPage implements OnInit {
       this.avatarScale = 1;
       this.avatarOffsetX = 0;
       this.avatarOffsetY = 0;
+
+      const image = new Image();
+      image.onload = () => {
+        this.avatarNaturalWidth = image.naturalWidth || image.width;
+        this.avatarNaturalHeight = image.naturalHeight || image.height;
+      };
+      image.src = this.pendingAvatarDataUrl;
     };
     reader.readAsDataURL(file);
   }

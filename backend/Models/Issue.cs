@@ -25,4 +25,5 @@ public class Issue
 
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public ICollection<IssueAssignment> Assignments { get; set; } = new List<IssueAssignment>();
+    public ICollection<IssueAttachment> Attachments { get; set; } = new List<IssueAttachment>();
 }

@@ -2,7 +2,8 @@ import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthStatus, Comment, Issue, IssuePriority, IssueStatus, Project, Team, TeamMember } from '../../core/models/api.models';
+import { ActivatedRoute } from '@angular/router';
+import { AuthStatus, Comment, Issue, IssueAttachmentPayload, IssuePriority, IssueStatus, Project, Team, TeamMember } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
@@ -31,7 +32,8 @@ export class IssueList implements OnInit {
     projectId: 0,
     status: 'Open' as IssueStatus,
     priority: 'Medium' as IssuePriority,
-    assignedMemberIds: [] as number[]
+    assignedMemberIds: [] as number[],
+    attachments: [] as IssueAttachmentPayload[]
   };
   isPreviewLoading = false;
   viewMode: 'board' | 'table' = 'board';
@@ -53,7 +55,8 @@ export class IssueList implements OnInit {
 
   constructor(
     private readonly api: Api,
-    private readonly toast: Toast
+    private readonly toast: Toast,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -66,12 +69,10 @@ export class IssueList implements OnInit {
       next: teams => {
         this.teams = teams;
         const activeTeamId = this.api.getActiveTeamId();
-        const selectedTeam = teams.find(team => team.id === activeTeamId) ?? teams[0];
+        const selectedTeam = teams.find(team => team.id === activeTeamId);
         this.filters.teamId = selectedTeam?.id ?? '';
-        this.members = selectedTeam?.members ?? [];
-        if (selectedTeam) {
-          this.api.setActiveTeamId(selectedTeam.id);
-        }
+        this.members = selectedTeam?.members ?? teams.flatMap(team => team.members);
+        this.api.setActiveTeamId(selectedTeam?.id ?? null);
         this.loadProjects();
         this.loadIssues();
       }
@@ -87,6 +88,7 @@ export class IssueList implements OnInit {
     this.api.getIssues(this.filters).subscribe({
       next: issues => {
         this.issues = issues;
+        this.openRequestedPreview();
         this.error = '';
         this.isLoading = false;
       },
@@ -102,7 +104,7 @@ export class IssueList implements OnInit {
     this.filters.projectId = '';
     this.filters.assigneeId = '';
     const selectedTeam = this.teams.find(team => team.id === teamId);
-    this.members = selectedTeam?.members ?? [];
+    this.members = selectedTeam?.members ?? this.teams.flatMap(team => team.members);
     this.api.setActiveTeamId(selectedTeam?.id ?? null);
     this.loadProjects();
     this.loadIssues();
@@ -164,6 +166,18 @@ export class IssueList implements OnInit {
     });
   }
 
+  private openRequestedPreview(): void {
+    const previewId = Number(this.route.snapshot.queryParamMap.get('previewId'));
+    if (!previewId || this.selectedIssue?.id === previewId) {
+      return;
+    }
+
+    const issue = this.issues.find(item => item.id === previewId);
+    if (issue) {
+      this.openPreview(issue);
+    }
+  }
+
   openCreateModal(): void {
     this.modalIssue = null;
     this.issueForm = {
@@ -172,7 +186,8 @@ export class IssueList implements OnInit {
       projectId: this.projects[0]?.id ?? 0,
       status: 'Open',
       priority: 'Medium',
-      assignedMemberIds: []
+      assignedMemberIds: [],
+      attachments: []
     };
   }
 
@@ -184,7 +199,13 @@ export class IssueList implements OnInit {
       projectId: issue.projectId,
       status: issue.status,
       priority: issue.priority,
-      assignedMemberIds: issue.assignees.map(assignee => assignee.memberId)
+      assignedMemberIds: issue.assignees.map(assignee => assignee.memberId),
+      attachments: issue.attachments.map(attachment => ({
+        fileName: attachment.fileName,
+        contentType: attachment.contentType,
+        size: attachment.size,
+        dataUrl: attachment.dataUrl
+      }))
     };
   }
 
@@ -237,6 +258,29 @@ export class IssueList implements OnInit {
 
   isAssigned(memberId: number): boolean {
     return this.issueForm.assignedMemberIds.includes(memberId);
+  }
+
+  handleIssueFiles(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    files.slice(0, 8 - this.issueForm.attachments.length).forEach(file => this.addIssueFile(file));
+    input.value = '';
+  }
+
+  removeIssueAttachment(fileName: string): void {
+    this.issueForm.attachments = this.issueForm.attachments.filter(attachment => attachment.fileName !== fileName);
+  }
+
+  formatFileSize(size: number): string {
+    if (size < 1024) {
+      return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(size / 1024 / 1024).toFixed(1)} MB`;
   }
 
   openAssignees(issue: Issue, event?: Event): void {
@@ -435,6 +479,27 @@ export class IssueList implements OnInit {
           this.toast.error('Could not update assignees.');
         }
       });
+  }
+
+  private addIssueFile(file: File): void {
+    if (file.size > 3 * 1024 * 1024) {
+      this.toast.error(`${file.name} is larger than 3 MB.`);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.issueForm.attachments = [
+        ...this.issueForm.attachments,
+        {
+          fileName: file.name,
+          contentType: file.type || 'application/octet-stream',
+          size: file.size,
+          dataUrl: String(reader.result ?? '')
+        }
+      ].slice(0, 8);
+    };
+    reader.readAsDataURL(file);
   }
 
   private isIssueStatus(value: string): value is IssueStatus {

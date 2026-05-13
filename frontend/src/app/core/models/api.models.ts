@@ -25,6 +25,7 @@ export interface Issue {
   updatedAt: string;
   commentCount: number;
   assignees: IssueAssignee[];
+  attachments: IssueAttachment[];
 }
 
 export interface IssueAssignee {
@@ -41,6 +42,23 @@ export interface IssuePayload {
   status: IssueStatus;
   priority: IssuePriority;
   assignedMemberIds: number[];
+  attachments?: IssueAttachmentPayload[];
+}
+
+export interface IssueAttachment {
+  id: number;
+  fileName: string;
+  contentType: string;
+  size: number;
+  dataUrl: string;
+  createdAt: string;
+}
+
+export interface IssueAttachmentPayload {
+  fileName: string;
+  contentType: string;
+  size: number;
+  dataUrl: string;
 }
 
 export interface Comment {

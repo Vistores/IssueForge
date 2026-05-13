@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
     public DbSet<IssueAssignment> IssueAssignments => Set<IssueAssignment>();
+    public DbSet<IssueAttachment> IssueAttachments => Set<IssueAttachment>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,6 +46,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(assignment => assignment.Issue)
             .WithMany(issue => issue.Assignments)
             .HasForeignKey(assignment => assignment.IssueId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<IssueAttachment>()
+            .HasOne(attachment => attachment.Issue)
+            .WithMany(issue => issue.Attachments)
+            .HasForeignKey(attachment => attachment.IssueId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<IssueAssignment>()

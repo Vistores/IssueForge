@@ -20,13 +20,14 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         [FromQuery] int? projectId,
         [FromQuery] int? assigneeId)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
+        var activeTeamId = await currentUser.GetActiveTeamIdAsync();
+        var teamIds = activeTeamId is null ? await currentUser.GetAccessibleTeamIdsAsync() : [activeTeamId.Value];
+        if (teamIds.Count == 0)
         {
             return Forbid();
         }
 
-        var query = db.Issues.Where(issue => issue.Project != null && issue.Project.TeamId == teamId);
+        var query = db.Issues.Where(issue => issue.Project != null && teamIds.Contains(issue.Project.TeamId));
 
         if (status is not null)
         {
@@ -51,6 +52,7 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         var issues = await query
             .Include(issue => issue.Project)
             .Include(issue => issue.Comments)
+            .Include(issue => issue.Attachments)
             .Include(issue => issue.Assignments)
             .ThenInclude(assignment => assignment.TeamMember)
             .ThenInclude(member => member!.User)
@@ -63,8 +65,9 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     [HttpGet("{id:int}")]
     public async Task<ActionResult<IssueDto>> GetIssue(int id)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
+        var activeTeamId = await currentUser.GetActiveTeamIdAsync();
+        var teamIds = activeTeamId is null ? await currentUser.GetAccessibleTeamIdsAsync() : [activeTeamId.Value];
+        if (teamIds.Count == 0)
         {
             return Forbid();
         }
@@ -72,10 +75,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         var issue = await db.Issues
             .Include(issue => issue.Project)
             .Include(issue => issue.Comments)
+            .Include(issue => issue.Attachments)
             .Include(issue => issue.Assignments)
             .ThenInclude(assignment => assignment.TeamMember)
             .ThenInclude(member => member!.User)
-            .Where(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId)
+            .Where(issue => issue.Id == id && issue.Project != null && teamIds.Contains(issue.Project.TeamId))
             .FirstOrDefaultAsync();
 
         return issue is null ? NotFound() : Ok(ToIssueDto(issue));
@@ -84,8 +88,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     [HttpPost]
     public async Task<ActionResult<IssueDto>> CreateIssue(IssueCreateDto dto)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
+        var activeTeamId = await currentUser.GetActiveTeamIdAsync();
+        var accessibleTeamIds = await currentUser.GetAccessibleTeamIdsAsync();
+        var project = await db.Projects.FirstOrDefaultAsync(project => project.Id == dto.ProjectId && accessibleTeamIds.Contains(project.TeamId));
+        var teamId = activeTeamId ?? project?.TeamId;
+        if (teamId is null || project is null)
         {
             return Forbid();
         }
@@ -93,12 +100,6 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         if (!await currentUser.CanEditAsync(teamId.Value))
         {
             return Forbid();
-        }
-
-        if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId && project.TeamId == teamId))
-        {
-            ModelState.AddModelError(nameof(dto.ProjectId), "Selected project does not exist.");
-            return ValidationProblem(ModelState);
         }
 
         var now = DateTime.UtcNow;
@@ -116,12 +117,14 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         db.Issues.Add(issue);
         await db.SaveChangesAsync();
         await ReplaceAssignments(issue, dto.AssignedMemberIds, teamId.Value);
+        ReplaceAttachments(issue, dto.Attachments);
         await AddLog(teamId.Value, issue.Id, "Issue created", $"Created issue \"{issue.Title}\".");
         await db.SaveChangesAsync();
 
         var result = await db.Issues
             .Include(savedIssue => savedIssue.Project)
             .Include(savedIssue => savedIssue.Comments)
+            .Include(savedIssue => savedIssue.Attachments)
             .Include(savedIssue => savedIssue.Assignments)
             .ThenInclude(assignment => assignment.TeamMember)
             .ThenInclude(member => member!.User)
@@ -134,24 +137,24 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateIssue(int id, IssueUpdateDto dto)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
-        {
-            return Forbid();
-        }
-
-        if (!await currentUser.CanEditAsync(teamId.Value) && !await currentUser.CanAssignAsync(teamId.Value))
-        {
-            return Forbid();
-        }
-
         var issue = await db.Issues
             .Include(issue => issue.Project)
-            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId);
+            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null);
 
         if (issue is null)
         {
             return NotFound();
+        }
+
+        var teamId = issue.Project!.TeamId;
+        if (!await currentUser.IsTeamMemberAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        if (!await currentUser.CanEditAsync(teamId) && !await currentUser.CanAssignAsync(teamId))
+        {
+            return Forbid();
         }
 
         if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId && project.TeamId == teamId))
@@ -166,8 +169,12 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         issue.Status = dto.Status;
         issue.Priority = dto.Priority;
         issue.UpdatedAt = DateTime.UtcNow;
-        await ReplaceAssignments(issue, dto.AssignedMemberIds, teamId.Value);
-        await AddLog(teamId.Value, issue.Id, "Issue updated", $"Updated issue \"{issue.Title}\".");
+        await ReplaceAssignments(issue, dto.AssignedMemberIds, teamId);
+        if (dto.Attachments is not null)
+        {
+            await ReplaceAttachmentsAsync(issue, dto.Attachments);
+        }
+        await AddLog(teamId, issue.Id, "Issue updated", $"Updated issue \"{issue.Title}\".");
 
         await db.SaveChangesAsync();
 
@@ -177,28 +184,23 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteIssue(int id)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
-        {
-            return Forbid();
-        }
-
-        if (!await currentUser.CanEditAsync(teamId.Value))
-        {
-            return Forbid();
-        }
-
         var issue = await db.Issues
             .Include(issue => issue.Project)
-            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId);
+            .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null);
 
         if (issue is null)
         {
             return NotFound();
         }
 
+        var teamId = issue.Project!.TeamId;
+        if (!await currentUser.IsTeamMemberAsync(teamId) || !await currentUser.CanEditAsync(teamId))
+        {
+            return Forbid();
+        }
+
         db.Issues.Remove(issue);
-        await AddLog(teamId.Value, issue.Id, "Issue deleted", $"Deleted issue \"{issue.Title}\".");
+        await AddLog(teamId, issue.Id, "Issue deleted", $"Deleted issue \"{issue.Title}\".");
         await db.SaveChangesAsync();
 
         return NoContent();
@@ -227,6 +229,34 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
                 AssignedAt = DateTime.UtcNow
             });
         }
+    }
+
+    private void ReplaceAttachments(Issue issue, IEnumerable<IssueAttachmentCreateDto>? attachments)
+    {
+        if (attachments is null)
+        {
+            return;
+        }
+
+        foreach (var attachment in attachments.Take(8))
+        {
+            db.IssueAttachments.Add(new IssueAttachment
+            {
+                IssueId = issue.Id,
+                FileName = attachment.FileName.Trim(),
+                ContentType = attachment.ContentType.Trim(),
+                Size = attachment.Size,
+                DataUrl = attachment.DataUrl,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+    }
+
+    private async Task ReplaceAttachmentsAsync(Issue issue, IEnumerable<IssueAttachmentCreateDto> attachments)
+    {
+        var existing = await db.IssueAttachments.Where(attachment => attachment.IssueId == issue.Id).ToListAsync();
+        db.IssueAttachments.RemoveRange(existing);
+        ReplaceAttachments(issue, attachments);
     }
 
     private async Task AddLog(int teamId, int? issueId, string action, string details)
@@ -259,6 +289,13 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
                 assignment.TeamMemberId,
                 assignment.TeamMember == null ? "Team member" : assignment.TeamMember.DisplayName,
                 assignment.TeamMember == null ? "Member" : assignment.TeamMember.Role,
-                assignment.TeamMember == null || assignment.TeamMember.User == null ? null : assignment.TeamMember.User.AvatarUrl)));
+                assignment.TeamMember == null || assignment.TeamMember.User == null ? null : assignment.TeamMember.User.AvatarUrl)),
+            issue.Attachments.Select(attachment => new IssueAttachmentDto(
+                attachment.Id,
+                attachment.FileName,
+                attachment.ContentType,
+                attachment.Size,
+                attachment.DataUrl,
+                attachment.CreatedAt)));
     }
 }

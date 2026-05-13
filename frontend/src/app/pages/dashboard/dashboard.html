@@ -72,7 +72,7 @@
 
       <div class="compact-issue-list">
         @for (issue of recentIssues; track issue.id) {
-          <a class="compact-issue" [routerLink]="['/issues', issue.id]">
+          <a class="compact-issue" routerLink="/issues" [queryParams]="{ previewId: issue.id }">
             <span class="status-dot status-{{ issue.status.toLowerCase() }}"></span>
             <span>
               <strong>{{ issue.title }}</strong>
@@ -97,7 +97,7 @@
 
     <div class="watchlist">
       @for (issue of criticalIssues; track issue.id) {
-        <a class="watch-item" [routerLink]="['/issues', issue.id]">
+        <a class="watch-item" routerLink="/issues" [queryParams]="{ previewId: issue.id }">
           <span class="badge priority-critical">Critical</span>
           <strong>{{ issue.title }}</strong>
           <small>{{ issue.projectName }} · {{ issue.status }}</small>

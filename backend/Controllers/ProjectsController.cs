@@ -16,14 +16,15 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
+        var activeTeamId = await currentUser.GetActiveTeamIdAsync();
+        var teamIds = activeTeamId is null ? await currentUser.GetAccessibleTeamIdsAsync() : [activeTeamId.Value];
+        if (teamIds.Count == 0)
         {
             return Forbid();
         }
 
         var projects = await db.Projects
-            .Where(project => project.TeamId == teamId)
+            .Where(project => teamIds.Contains(project.TeamId))
             .OrderBy(project => project.Name)
             .Select(project => new ProjectDto(
                 project.Id,

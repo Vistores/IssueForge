@@ -2104,6 +2104,45 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.attachment-uploader,
+.attachment-preview {
+  background: rgba(91, 55, 20, 0.07);
+  border: 1px solid rgba(156, 113, 55, 0.28);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.attachment-uploader small,
+.attachment-item small {
+  color: var(--muted);
+}
+
+.attachment-list {
+  display: grid;
+  gap: 8px;
+}
+
+.attachment-item {
+  align-items: center;
+  background: rgba(255, 248, 225, 0.5);
+  border: 1px solid rgba(156, 113, 55, 0.28);
+  border-radius: 6px;
+  color: var(--text);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  padding: 9px 10px;
+  text-decoration: none;
+}
+
+.attachment-item span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .avatar-crop-modal {
   text-align: left;
 }

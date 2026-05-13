@@ -90,4 +90,18 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor, AppDbC
 
         return null;
     }
+
+    public async Task<List<int>> GetAccessibleTeamIdsAsync()
+    {
+        var userId = UserId;
+        if (userId is null)
+        {
+            return [];
+        }
+
+        return await db.TeamMembers
+            .Where(member => member.UserId == userId)
+            .Select(member => member.TeamId)
+            .ToListAsync();
+    }
 }
