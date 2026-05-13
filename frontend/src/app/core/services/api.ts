@@ -14,6 +14,7 @@ import {
   ProjectPayload,
   Team,
   TeamMemberUpdatePayload,
+  TeamOwnerTransferPayload,
   MemberStats,
   ActivityLog
 } from '../models/api.models';
@@ -119,6 +120,10 @@ export class Api {
     return this.http.put<AuthStatus>(`${this.baseUrl}/auth/account`, payload, { withCredentials: true });
   }
 
+  deleteAccount() {
+    return this.http.delete<void>(`${this.baseUrl}/auth/account`, { withCredentials: true });
+  }
+
   getGoogleLoginUrl(inviteCode?: string) {
     const params = inviteCode ? `?inviteCode=${encodeURIComponent(inviteCode)}` : '';
     return `${this.baseUrl}/auth/google${params}`;
@@ -138,6 +143,14 @@ export class Api {
 
   updateTeamMember(teamId: number, memberId: number, payload: TeamMemberUpdatePayload) {
     return this.http.put<void>(`${this.baseUrl}/teams/${teamId}/members/${memberId}`, payload, { withCredentials: true });
+  }
+
+  transferTeamOwner(teamId: number, payload: TeamOwnerTransferPayload) {
+    return this.http.post<void>(`${this.baseUrl}/teams/${teamId}/transfer-owner`, payload, { withCredentials: true });
+  }
+
+  deleteTeam(teamId: number) {
+    return this.http.delete<void>(`${this.baseUrl}/teams/${teamId}`, { withCredentials: true });
   }
 
   getTeamStats(teamId: number) {

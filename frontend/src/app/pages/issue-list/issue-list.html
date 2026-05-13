@@ -345,10 +345,10 @@
             }
           </div>
           <form class="comment-compose" (submit)="$event.preventDefault(); addCommentFromPreview()">
-            <label>
-              <span>Author</span>
-              <input [(ngModel)]="commentForm.author" name="previewAuthor" />
-            </label>
+            <div class="comment-author-note">
+              <span>Commenting as</span>
+              <strong>{{ auth?.name || 'Signed-in user' }}</strong>
+            </div>
             <label>
               <span>Comment</span>
               <textarea [(ngModel)]="commentForm.text" name="previewComment" rows="5" placeholder="Write an update, decision, blocker, or test result"></textarea>

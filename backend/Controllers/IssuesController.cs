@@ -90,6 +90,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
             return Forbid();
         }
 
+        if (!await currentUser.CanEditAsync(teamId.Value))
+        {
+            return Forbid();
+        }
+
         if (!await db.Projects.AnyAsync(project => project.Id == dto.ProjectId && project.TeamId == teamId))
         {
             ModelState.AddModelError(nameof(dto.ProjectId), "Selected project does not exist.");
@@ -135,6 +140,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
             return Forbid();
         }
 
+        if (!await currentUser.CanEditAsync(teamId.Value) && !await currentUser.CanAssignAsync(teamId.Value))
+        {
+            return Forbid();
+        }
+
         var issue = await db.Issues
             .Include(issue => issue.Project)
             .FirstOrDefaultAsync(issue => issue.Id == id && issue.Project != null && issue.Project.TeamId == teamId);
@@ -169,6 +179,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     {
         var teamId = await currentUser.GetActiveTeamIdAsync();
         if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await currentUser.CanEditAsync(teamId.Value))
         {
             return Forbid();
         }

@@ -11,5 +11,5 @@ public class CommentCreateDto
     public string Text { get; set; } = string.Empty;
 
     [MaxLength(80)]
-    public string Author { get; set; } = "QA Tester";
+    public string? Author { get; set; }
 }

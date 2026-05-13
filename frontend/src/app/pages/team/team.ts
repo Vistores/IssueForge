@@ -15,6 +15,7 @@ export class TeamPage implements OnInit {
   activeTeamId: number | null = null;
   selectedTeam?: Team;
   pendingOwnerTransfer?: TeamMember;
+  pendingTeamDelete?: Team;
   isTeamCreateModalOpen = false;
   teamMode: 'create' | 'join' = 'create';
   teamName = 'New QA Guild';
@@ -102,27 +103,70 @@ export class TeamPage implements OnInit {
     return member.userId === this.auth?.userId;
   }
 
+  isCurrentUserOwner(team = this.selectedTeam): boolean {
+    return !!team?.members.some(member => this.isCurrentUser(member) && member.role === 'Owner');
+  }
+
   requestMemberUpdate(member: TeamMember): void {
     if (this.isCurrentUser(member)) {
       this.toast.error('You cannot edit your own permissions here.');
       return;
     }
 
-    if (member.role === 'Owner') {
-      this.pendingOwnerTransfer = member;
-      return;
-    }
-
     this.updateMember(member);
   }
 
-  confirmOwnerTransfer(): void {
-    if (!this.pendingOwnerTransfer) {
+  requestOwnerTransfer(member: TeamMember): void {
+    if (this.isCurrentUser(member)) {
+      this.toast.error('You already own this team.');
       return;
     }
 
-    this.updateMember(this.pendingOwnerTransfer);
-    this.pendingOwnerTransfer = undefined;
+    this.pendingOwnerTransfer = member;
+  }
+
+  confirmOwnerTransfer(): void {
+    if (!this.pendingOwnerTransfer || !this.selectedTeam) {
+      return;
+    }
+
+    this.api.transferTeamOwner(this.selectedTeam.id, { newOwnerMemberId: this.pendingOwnerTransfer.id }).subscribe({
+      next: () => {
+        this.toast.success('Team ownership transferred.');
+        this.pendingOwnerTransfer = undefined;
+        this.closeTeamDetails();
+        this.loadTeams();
+      },
+      error: () => this.toast.error('Could not transfer ownership.')
+    });
+  }
+
+  requestDeleteTeam(team: Team): void {
+    if (!this.isCurrentUserOwner(team)) {
+      this.toast.error('Only the owner can delete this team.');
+      return;
+    }
+
+    this.pendingTeamDelete = team;
+  }
+
+  confirmDeleteTeam(): void {
+    if (!this.pendingTeamDelete) {
+      return;
+    }
+
+    this.api.deleteTeam(this.pendingTeamDelete.id).subscribe({
+      next: () => {
+        this.toast.success('Team deleted.');
+        if (this.activeTeamId === this.pendingTeamDelete?.id) {
+          this.api.setActiveTeamId(null);
+        }
+        this.pendingTeamDelete = undefined;
+        this.closeTeamDetails();
+        this.loadTeams();
+      },
+      error: () => this.toast.error('Could not delete team.')
+    });
   }
 
   private updateMember(member: TeamMember): void {
@@ -141,6 +185,12 @@ export class TeamPage implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success('Member permissions updated.');
+          if (this.selectedTeam) {
+            this.selectedTeam = {
+              ...this.selectedTeam,
+              members: this.selectedTeam.members.map(item => (item.id === member.id ? { ...member } : item))
+            };
+          }
           this.loadTeams();
         },
         error: () => this.toast.error('Could not update member.')

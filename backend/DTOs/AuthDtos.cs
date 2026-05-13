@@ -12,7 +12,7 @@ public record AuthStatusDto(
 
 public class AccountUpdateDto
 {
-    [MaxLength(2000)]
+    [MaxLength(250000)]
     public string? AvatarUrl { get; set; }
 }
 
@@ -84,6 +84,12 @@ public class TeamMemberUpdateDto
 
     [Range(0, 100)]
     public int IssueLimit { get; set; } = 5;
+}
+
+public class TeamOwnerTransferDto
+{
+    [Range(1, int.MaxValue)]
+    public int NewOwnerMemberId { get; set; }
 }
 
 public record MemberStatsDto(

@@ -1072,6 +1072,18 @@ textarea {
   padding: 22px 24px;
 }
 
+.issue-modal .eyebrow,
+.center-modal .eyebrow,
+.profile-card .eyebrow {
+  color: #8d3f1b !important;
+  text-shadow: none;
+}
+
+.issue-modal-main {
+  display: grid;
+  gap: 16px;
+}
+
 .issue-modal-comments {
   background: rgba(91, 55, 20, 0.08);
   border-left: 1px solid rgba(156, 113, 55, 0.36);
@@ -1140,6 +1152,7 @@ textarea {
 
 .drawer-meta div {
   background: rgba(91, 55, 20, 0.12);
+  border: 1px solid rgba(156, 113, 55, 0.22);
   border-radius: 6px;
   padding: 12px;
 }
@@ -1157,9 +1170,11 @@ textarea {
 }
 
 .drawer-actions {
+  border-top: 1px solid rgba(156, 113, 55, 0.3);
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  padding-top: 14px;
 }
 
 .team-layout {
@@ -1910,6 +1925,20 @@ textarea {
   margin-top: 18px;
 }
 
+.issue-modal .assignee-section {
+  background: rgba(91, 55, 20, 0.07);
+  border: 1px solid rgba(156, 113, 55, 0.28);
+  border-radius: 8px;
+  margin-top: 0;
+  padding: 14px;
+}
+
+.issue-modal .compact-assignee-picker {
+  border-top: 1px solid rgba(156, 113, 55, 0.22);
+  margin-top: 2px;
+  padding-top: 10px;
+}
+
 .member-pill-list,
 .member-checkbox-grid,
 .member-card-list {
@@ -2039,10 +2068,12 @@ textarea {
 }
 
 .comment-compose {
-  border-top: 1px solid rgba(156, 113, 55, 0.34);
+  background: rgba(91, 55, 20, 0.08);
+  border: 1px solid rgba(156, 113, 55, 0.3);
+  border-radius: 8px;
   display: grid;
   gap: 10px;
-  padding-top: 12px;
+  padding: 12px;
 }
 
 .comment-compose label {
@@ -2055,6 +2086,22 @@ textarea {
   font-size: 12px;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.comment-author-note {
+  align-items: center;
+  background: rgba(255, 248, 225, 0.52);
+  border: 1px solid rgba(156, 113, 55, 0.24);
+  border-radius: 6px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 9px 10px;
+}
+
+.comment-author-note strong {
+  color: var(--text);
+  overflow-wrap: anywhere;
 }
 
 .avatar-crop-modal {
@@ -2126,7 +2173,7 @@ textarea {
   align-items: end;
   display: grid;
   gap: 10px;
-  grid-template-columns: minmax(120px, 1fr) auto auto 92px auto;
+  grid-template-columns: minmax(120px, 1fr) auto auto 92px auto auto;
 }
 
 .toggle-row {
@@ -2145,6 +2192,40 @@ textarea {
 .activity-list {
   display: grid;
   gap: 12px;
+}
+
+.team-danger-block,
+.account-danger-zone {
+  align-items: center;
+  background: rgba(143, 42, 25, 0.08);
+  border: 1px solid rgba(178, 60, 41, 0.34);
+  border-radius: 8px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.team-danger-block small,
+.account-danger-zone p {
+  color: var(--muted);
+}
+
+.account-danger-zone {
+  margin: 18px auto 0;
+  max-width: 940px;
+}
+
+.account-danger-zone h2 {
+  margin: 0 0 6px;
+}
+
+.account-danger-zone p {
+  margin: 0;
+}
+
+.danger-modal {
+  border-color: rgba(178, 60, 41, 0.55);
 }
 
 .stat-card,

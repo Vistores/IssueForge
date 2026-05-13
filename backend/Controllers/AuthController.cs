@@ -117,6 +117,49 @@ public class AuthController(IConfiguration configuration, AppDbContext db, Passw
         return Ok(new AuthStatusDto(true, IsGoogleConfigured(), user.DisplayName, user.Email, user.Id, user.AvatarUrl));
     }
 
+    [HttpDelete("account")]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await db.Users
+            .Include(user => user.TeamMemberships)
+            .ThenInclude(member => member.Team)
+            .ThenInclude(team => team!.Members)
+            .FirstOrDefaultAsync(user => user.Id == userId);
+
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        var ownedSharedTeams = user.TeamMemberships
+            .Where(member => member.Role == "Owner" && member.Team != null && member.Team.Members.Count > 1)
+            .Select(member => member.Team!.Name)
+            .ToList();
+
+        if (ownedSharedTeams.Count > 0)
+        {
+            return BadRequest(new { message = $"Transfer ownership before deleting this account: {string.Join(", ", ownedSharedTeams)}." });
+        }
+
+        var soloOwnedTeams = user.TeamMemberships
+            .Where(member => member.Role == "Owner" && member.Team != null)
+            .Select(member => member.Team!)
+            .Distinct()
+            .ToList();
+
+        db.Teams.RemoveRange(soloOwnedTeams);
+        db.Users.Remove(user);
+        await db.SaveChangesAsync();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        return NoContent();
+    }
+
     private async Task SignInUser(AppUser user)
     {
         var claims = new List<Claim>

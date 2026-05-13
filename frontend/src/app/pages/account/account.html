@@ -38,8 +38,19 @@
     </div>
 
     <div class="profile-actions profile-actions-inline">
+      @if (auth?.avatarUrl) {
+        <button class="button ghost" type="button" (click)="removeAvatar()">Remove photo</button>
+      }
       <button class="button danger" type="button" (click)="logout()">Sign out</button>
     </div>
+  </section>
+
+  <section class="panel account-danger-zone">
+    <div>
+      <h2>Delete account</h2>
+      <p>Remove this login and all private teams where you are the only owner. Shared teams require ownership transfer first.</p>
+    </div>
+    <button class="button danger" type="button" (click)="openDeleteAccountModal()">Delete account</button>
   </section>
 }
 
@@ -76,6 +87,26 @@
     <div class="form-actions">
       <button class="button ghost" type="button" (click)="closeAvatarCrop()">Cancel</button>
       <button class="button primary" type="button" (click)="saveCroppedAvatar()">Save avatar</button>
+    </div>
+  </section>
+}
+
+@if (isDeleteAccountModalOpen) {
+  <div class="modal-backdrop" (click)="closeDeleteAccountModal()"></div>
+  <section class="center-modal compact-modal danger-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Delete account</p>
+        <h2>Are you sure?</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeDeleteAccountModal()">Close</button>
+    </header>
+    <p class="description">
+      This signs you out and deletes your account. If you own a shared team, transfer ownership first so teammates do not lose access.
+    </p>
+    <div class="form-actions">
+      <button class="button ghost" type="button" (click)="closeDeleteAccountModal()">Cancel</button>
+      <button class="button danger" type="button" (click)="deleteAccount()">Delete account</button>
     </div>
   </section>
 }

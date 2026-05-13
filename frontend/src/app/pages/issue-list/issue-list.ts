@@ -40,7 +40,6 @@ export class IssueList implements OnInit {
   isUpdating = false;
   isAssigneeFilterOpen = false;
   commentForm = {
-    author: 'QA Tester',
     text: ''
   };
 
@@ -61,7 +60,6 @@ export class IssueList implements OnInit {
     this.api.getAuthStatus().subscribe({
       next: auth => {
         this.auth = auth;
-        this.commentForm.author = auth.name ?? 'QA Tester';
       }
     });
     this.api.getTeams().subscribe({
@@ -277,7 +275,6 @@ export class IssueList implements OnInit {
 
     this.api
       .addComment(this.selectedIssue.id, {
-        author: (this.commentForm.author || this.auth?.name || 'QA Tester').trim(),
         text: this.commentForm.text.trim()
       })
       .subscribe({

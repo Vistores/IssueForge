@@ -19,6 +19,7 @@ export class AccountPage implements OnInit {
   avatarScale = 1;
   avatarOffsetX = 0;
   avatarOffsetY = 0;
+  isDeleteAccountModalOpen = false;
 
   constructor(
     private readonly api: Api,
@@ -46,6 +47,11 @@ export class AccountPage implements OnInit {
       },
       error: () => this.toast.error('Could not update profile photo.')
     });
+  }
+
+  removeAvatar(): void {
+    this.avatarUrl = '';
+    this.saveAvatar();
   }
 
   get cropTransform(): string {
@@ -92,6 +98,28 @@ export class AccountPage implements OnInit {
     });
   }
 
+  openDeleteAccountModal(): void {
+    this.isDeleteAccountModalOpen = true;
+  }
+
+  closeDeleteAccountModal(): void {
+    this.isDeleteAccountModalOpen = false;
+  }
+
+  deleteAccount(): void {
+    this.api.deleteAccount().subscribe({
+      next: () => {
+        this.api.setActiveTeamId(null);
+        this.toast.success('Account deleted.');
+        this.router.navigateByUrl('/auth');
+      },
+      error: error => {
+        const message = error?.error?.message ?? 'Could not delete account.';
+        this.toast.error(message);
+      }
+    });
+  }
+
   closeAvatarCrop(): void {
     this.pendingAvatarDataUrl = '';
   }
@@ -103,7 +131,7 @@ export class AccountPage implements OnInit {
 
     const image = new Image();
     image.onload = () => {
-      const size = 320;
+      const size = 192;
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
@@ -128,7 +156,7 @@ export class AccountPage implements OnInit {
       context.drawImage(image, x, y, drawWidth, drawHeight);
       context.restore();
 
-      this.avatarUrl = canvas.toDataURL('image/png');
+      this.avatarUrl = canvas.toDataURL('image/jpeg', 0.86);
       this.pendingAvatarDataUrl = '';
       this.saveAvatar();
     };

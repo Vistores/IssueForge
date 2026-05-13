@@ -111,6 +111,16 @@
       </div>
     </div>
 
+    @if (isCurrentUserOwner()) {
+      <div class="team-danger-block">
+        <div>
+          <strong>Owner controls</strong>
+          <small>Transfer ownership before leaving a shared team, or delete the workspace when it is no longer needed.</small>
+        </div>
+        <button class="button danger compact-button" type="button" (click)="requestDeleteTeam(selectedTeam)">Delete team</button>
+      </div>
+    }
+
     <div class="modal-section-title">
       <strong>Members and permissions</strong>
       <small>Owner transfer asks for confirmation. Your own permissions are protected.</small>
@@ -140,6 +150,7 @@
                 <option value="Owner">Owner</option>
                 <option value="Manager">Manager</option>
                 <option value="Member">Member</option>
+                <option value="Commenter">Commenter</option>
                 <option value="Viewer">Viewer</option>
               </select>
             </label>
@@ -156,9 +167,32 @@
               <input type="number" min="0" [(ngModel)]="member.issueLimit" [disabled]="isCurrentUser(member)" />
             </label>
             <button class="button ghost compact-button" type="button" [disabled]="isCurrentUser(member)" (click)="requestMemberUpdate(member)">Save</button>
+            @if (isCurrentUserOwner() && !isCurrentUser(member)) {
+              <button class="button primary compact-button" type="button" (click)="requestOwnerTransfer(member)">Make owner</button>
+            }
           </div>
         </div>
       }
+    </div>
+  </section>
+}
+
+@if (pendingTeamDelete) {
+  <div class="modal-backdrop" (click)="pendingTeamDelete = undefined"></div>
+  <section class="center-modal compact-modal danger-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Delete workspace</p>
+        <h2>Delete {{ pendingTeamDelete.name }}?</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="pendingTeamDelete = undefined">Close</button>
+    </header>
+    <p class="description">
+      This permanently removes the team, projects, issues, comments, assignments and activity logs. This action cannot be undone.
+    </p>
+    <div class="form-actions">
+      <button class="button ghost" type="button" (click)="pendingTeamDelete = undefined">Cancel</button>
+      <button class="button danger" type="button" (click)="confirmDeleteTeam()">Delete team</button>
     </div>
   </section>
 }

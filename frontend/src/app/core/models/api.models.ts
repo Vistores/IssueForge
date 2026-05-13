@@ -53,7 +53,7 @@ export interface Comment {
 
 export interface CommentPayload {
   text: string;
-  author: string;
+  author?: string;
 }
 
 export interface DashboardSummary {
@@ -106,6 +106,10 @@ export interface TeamMemberUpdatePayload {
   canEditIssues: boolean;
   canAssignIssues: boolean;
   issueLimit: number;
+}
+
+export interface TeamOwnerTransferPayload {
+  newOwnerMemberId: number;
 }
 
 export interface MemberStats {

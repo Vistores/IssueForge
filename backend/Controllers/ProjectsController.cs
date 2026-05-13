@@ -65,6 +65,11 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
             return Forbid();
         }
 
+        if (!await currentUser.CanEditAsync(teamId.Value))
+        {
+            return Forbid();
+        }
+
         var project = new Project
         {
             TeamId = teamId.Value,
@@ -92,6 +97,11 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
     {
         var teamId = await currentUser.GetActiveTeamIdAsync();
         if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await currentUser.CanEditAsync(teamId.Value))
         {
             return Forbid();
         }
@@ -124,6 +134,11 @@ public class ProjectsController(AppDbContext db, CurrentUserService currentUser)
     {
         var teamId = await currentUser.GetActiveTeamIdAsync();
         if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await currentUser.CanEditAsync(teamId.Value))
         {
             return Forbid();
         }

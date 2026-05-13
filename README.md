@@ -17,9 +17,12 @@ The project is built to demonstrate practical Junior/Trainee Angular + ASP.NET C
 ## Features
 
 - Account registration and sign-in
+- Account deletion with shared-team ownership checks
 - Optional Google OAuth entry point when credentials are configured
 - Private team workspaces
 - Create teams or join by invite code/link
+- Delete a team when you are the owner
+- Transfer team ownership to another member with confirmation
 - Team-scoped projects, issues, comments, members and activity
 - Project CRUD: create, edit, delete and list projects
 - Issue CRUD: create, edit, delete and list issues
@@ -29,8 +32,9 @@ The project is built to demonstrate practical Junior/Trainee Angular + ASP.NET C
 - Table view with inline status and priority editing
 - Filters by team, status, priority, project and assignee
 - Assignment controls with member avatars and quick "assign me" actions
-- Team member roles: Owner, Manager, Member and Viewer
+- Team member roles: Owner, Manager, Member, Commenter and Viewer
 - Team permissions for editing and assigning issues
+- Commenter role for users who can only leave task comments
 - Member issue limits
 - Member statistics page
 - Team activity log for issue and permission changes
@@ -43,6 +47,8 @@ The project is built to demonstrate practical Junior/Trainee Angular + ASP.NET C
 - DTO-based API responses instead of exposing raw EF entities
 - Seed data for local demo usage
 - CORS configuration for the Angular dev server
+- Docker Compose setup for local container runs
+- GitHub Actions workflow for backend and frontend build checks
 
 ## Screenshots
 
@@ -107,6 +113,20 @@ The Angular app runs at:
 
 Make sure the backend is running before using the frontend.
 
+## Run with Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Container URLs:
+
+- Frontend: `http://localhost:4200`
+- Backend API: `http://localhost:5008/api`
+- Swagger: `http://localhost:5008/swagger`
+
+The Docker Compose setup stores SQLite data in the `issueforge-data` volume.
+
 ## API Overview
 
 ### Auth
@@ -116,6 +136,7 @@ Make sure the backend is running before using the frontend.
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `PUT /api/auth/account`
+- `DELETE /api/auth/account`
 - `GET /api/auth/google`
 - `GET /api/auth/google/callback`
 
@@ -125,6 +146,8 @@ Make sure the backend is running before using the frontend.
 - `POST /api/teams`
 - `POST /api/teams/join`
 - `PUT /api/teams/{teamId}/members/{memberId}`
+- `POST /api/teams/{teamId}/transfer-owner`
+- `DELETE /api/teams/{teamId}`
 - `GET /api/teams/{teamId}/stats`
 - `GET /api/teams/{teamId}/activity`
 
@@ -196,12 +219,25 @@ Issue priorities:
 - Team-scoped data access
 - Cookie-based demo authentication
 - Optional external OAuth integration point
+- Role-aware authorization checks for team actions, issue editing and comments
 - CRUD operations with proper HTTP status codes
 - Basic validation and error handling
 - Swagger/OpenAPI documentation
 - Clean monorepo organization
 - Practical Git workflow and commit history
 - Portfolio-focused README and project presentation
+- Docker Compose foundations
+- GitHub Actions build workflow
+
+## Deployment Notes
+
+- Build the backend with `dotnet publish -c Release`.
+- Build the frontend with `npm run build`.
+- Configure the frontend API base URL for the deployed backend before hosting.
+- Set a production SQLite path or replace SQLite with a managed relational database.
+- Use HTTPS and a production identity provider before exposing the app publicly.
+- Store Google OAuth credentials and connection strings as environment secrets.
+- Run the GitHub Actions workflow before merging changes.
 
 ## Future Improvements
 
@@ -211,7 +247,6 @@ Issue priorities:
 - File attachments for screenshots and reproduction assets
 - Rich text comments
 - Notifications for assignment and status changes
-- Docker Compose for backend and frontend
 - Unit and integration tests
-- CI workflow for build/test checks
-- Deployment instructions
+- API-level tests for team permissions and ownership transfer
+- Hosted demo deployment

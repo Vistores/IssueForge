@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using IssueForge.Api.Data;
+using IssueForge.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace IssueForge.Api.Services;
@@ -42,6 +43,41 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor, AppDbC
             .Where(member => member.TeamId == teamId && member.UserId == userId)
             .Select(member => (int?)member.Id)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<TeamMember?> GetCurrentMemberAsync(int teamId)
+    {
+        var userId = UserId;
+        if (userId is null)
+        {
+            return null;
+        }
+
+        return await db.TeamMembers.FirstOrDefaultAsync(member => member.TeamId == teamId && member.UserId == userId);
+    }
+
+    public async Task<bool> IsOwnerAsync(int teamId)
+    {
+        var member = await GetCurrentMemberAsync(teamId);
+        return member?.Role == "Owner";
+    }
+
+    public async Task<bool> CanEditAsync(int teamId)
+    {
+        var member = await GetCurrentMemberAsync(teamId);
+        return member is not null && (member.Role is "Owner" or "Manager" || member.CanEditIssues);
+    }
+
+    public async Task<bool> CanAssignAsync(int teamId)
+    {
+        var member = await GetCurrentMemberAsync(teamId);
+        return member is not null && (member.Role is "Owner" or "Manager" || member.CanAssignIssues);
+    }
+
+    public async Task<bool> CanCommentAsync(int teamId)
+    {
+        var member = await GetCurrentMemberAsync(teamId);
+        return member is not null && member.Role != "Viewer";
     }
 
     public async Task<int?> GetActiveTeamIdAsync()

@@ -116,7 +116,7 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
     [HttpPut("{teamId:int}/members/{memberId:int}")]
     public async Task<IActionResult> UpdateMember(int teamId, int memberId, TeamMemberUpdateDto dto)
     {
-        if (!await currentUser.IsTeamMemberAsync(teamId))
+        if (!await currentUser.IsOwnerAsync(teamId))
         {
             return Forbid();
         }
@@ -127,11 +127,78 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
             return NotFound();
         }
 
-        member.Role = dto.Role.Trim();
-        member.CanEditIssues = dto.CanEditIssues;
-        member.CanAssignIssues = dto.CanAssignIssues;
+        var currentMemberId = await currentUser.GetCurrentMemberIdAsync(teamId);
+        if (member.Id == currentMemberId)
+        {
+            return BadRequest(new { message = "Use owner transfer instead of editing your own permissions." });
+        }
+
+        var role = NormalizeRole(dto.Role);
+        if (role == "Owner")
+        {
+            return BadRequest(new { message = "Use the owner transfer action to make another member an owner." });
+        }
+
+        member.Role = role;
+        member.CanEditIssues = role is "Owner" or "Manager" || (role == "Member" && dto.CanEditIssues);
+        member.CanAssignIssues = role is "Owner" or "Manager" || (role == "Member" && dto.CanAssignIssues);
         member.IssueLimit = dto.IssueLimit;
         await AddLog(teamId, "Member permissions", $"{member.DisplayName} is now {member.Role}.");
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPost("{teamId:int}/transfer-owner")]
+    public async Task<IActionResult> TransferOwner(int teamId, TeamOwnerTransferDto dto)
+    {
+        if (!await currentUser.IsOwnerAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var currentMemberId = await currentUser.GetCurrentMemberIdAsync(teamId);
+        if (currentMemberId == dto.NewOwnerMemberId)
+        {
+            return BadRequest(new { message = "You already own this team." });
+        }
+
+        var members = await db.TeamMembers.Where(member => member.TeamId == teamId).ToListAsync();
+        var currentOwner = members.FirstOrDefault(member => member.Id == currentMemberId);
+        var newOwner = members.FirstOrDefault(member => member.Id == dto.NewOwnerMemberId);
+
+        if (currentOwner is null || newOwner is null)
+        {
+            return NotFound();
+        }
+
+        currentOwner.Role = "Manager";
+        currentOwner.CanEditIssues = true;
+        currentOwner.CanAssignIssues = true;
+        newOwner.Role = "Owner";
+        newOwner.CanEditIssues = true;
+        newOwner.CanAssignIssues = true;
+        await AddLog(teamId, "Owner transferred", $"{newOwner.DisplayName} is now the team owner.");
+        await db.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{teamId:int}")]
+    public async Task<IActionResult> DeleteTeam(int teamId)
+    {
+        if (!await currentUser.IsOwnerAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var team = await db.Teams.FirstOrDefaultAsync(team => team.Id == teamId);
+        if (team is null)
+        {
+            return NotFound();
+        }
+
+        db.Teams.Remove(team);
         await db.SaveChangesAsync();
 
         return NoContent();
@@ -232,5 +299,17 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
             Details = details,
             CreatedAt = DateTime.UtcNow
         });
+    }
+
+    private static string NormalizeRole(string role)
+    {
+        return role.Trim() switch
+        {
+            "Owner" => "Owner",
+            "Manager" => "Manager",
+            "Viewer" => "Viewer",
+            "Commenter" => "Commenter",
+            _ => "Member"
+        };
     }
 }

@@ -50,6 +50,11 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
             return Forbid();
         }
 
+        if (!await currentUser.CanCommentAsync(teamId.Value))
+        {
+            return Forbid();
+        }
+
         var issue = await db.Issues
             .Include(issue => issue.Project)
             .FirstOrDefaultAsync(issue => issue.Id == issueId && issue.Project != null && issue.Project.TeamId == teamId);
@@ -59,11 +64,12 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
             return NotFound();
         }
 
+        var member = await currentUser.GetCurrentMemberAsync(teamId.Value);
         var comment = new Comment
         {
             IssueId = issueId,
             Text = dto.Text.Trim(),
-            Author = string.IsNullOrWhiteSpace(dto.Author) ? "QA Tester" : dto.Author.Trim(),
+            Author = member?.DisplayName ?? User.Identity?.Name ?? "Team member",
             CreatedAt = DateTime.UtcNow
         };
 
@@ -80,6 +86,11 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
     {
         var teamId = await currentUser.GetActiveTeamIdAsync();
         if (teamId is null)
+        {
+            return Forbid();
+        }
+
+        if (!await currentUser.CanEditAsync(teamId.Value))
         {
             return Forbid();
         }
