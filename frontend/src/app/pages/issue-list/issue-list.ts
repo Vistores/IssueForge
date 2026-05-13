@@ -2,7 +2,7 @@ import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthStatus, Comment, Issue, IssuePriority, IssueStatus, Project, TeamMember } from '../../core/models/api.models';
+import { AuthStatus, Comment, Issue, IssuePriority, IssueStatus, Project, Team, TeamMember } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
@@ -18,6 +18,7 @@ export class IssueList implements OnInit {
 
   issues: Issue[] = [];
   projects: Project[] = [];
+  teams: Team[] = [];
   members: TeamMember[] = [];
   auth?: AuthStatus;
   selectedIssue?: Issue;
@@ -37,16 +38,18 @@ export class IssueList implements OnInit {
   isLoading = true;
   error = '';
   isUpdating = false;
+  isAssigneeFilterOpen = false;
   commentForm = {
     author: 'QA Tester',
     text: ''
   };
 
-  filters: { status: IssueStatus | ''; priority: IssuePriority | ''; projectId: number | ''; assigneeId: number | '' } = {
+  filters: { status: IssueStatus | ''; priority: IssuePriority | ''; projectId: number | ''; assigneeId: number | ''; teamId: number | '' } = {
     status: '',
     priority: '',
     projectId: '',
-    assigneeId: ''
+    assigneeId: '',
+    teamId: ''
   };
 
   constructor(
@@ -61,14 +64,24 @@ export class IssueList implements OnInit {
         this.commentForm.author = auth.name ?? 'QA Tester';
       }
     });
-    this.api.getProjects().subscribe({ next: projects => (this.projects = projects) });
     this.api.getTeams().subscribe({
       next: teams => {
+        this.teams = teams;
         const activeTeamId = this.api.getActiveTeamId();
-        this.members = teams.find(team => team.id === activeTeamId)?.members ?? teams[0]?.members ?? [];
+        const selectedTeam = teams.find(team => team.id === activeTeamId) ?? teams[0];
+        this.filters.teamId = selectedTeam?.id ?? '';
+        this.members = selectedTeam?.members ?? [];
+        if (selectedTeam) {
+          this.api.setActiveTeamId(selectedTeam.id);
+        }
+        this.loadProjects();
+        this.loadIssues();
       }
     });
-    this.loadIssues();
+  }
+
+  loadProjects(): void {
+    this.api.getProjects().subscribe({ next: projects => (this.projects = projects) });
   }
 
   loadIssues(): void {
@@ -84,6 +97,27 @@ export class IssueList implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  changeTeamFilter(teamId: number | ''): void {
+    this.filters.teamId = teamId;
+    this.filters.projectId = '';
+    this.filters.assigneeId = '';
+    const selectedTeam = this.teams.find(team => team.id === teamId);
+    this.members = selectedTeam?.members ?? [];
+    this.api.setActiveTeamId(selectedTeam?.id ?? null);
+    this.loadProjects();
+    this.loadIssues();
+  }
+
+  selectAssigneeFilter(memberId: number | ''): void {
+    this.filters.assigneeId = memberId;
+    this.isAssigneeFilterOpen = false;
+    this.loadIssues();
+  }
+
+  get selectedAssignee(): TeamMember | undefined {
+    return this.members.find(member => member.id === this.filters.assigneeId);
   }
 
   issuesByStatus(status: IssueStatus): Issue[] {
@@ -313,7 +347,8 @@ export class IssueList implements OnInit {
   }
 
   clearFilters(): void {
-    this.filters = { status: '', priority: '', projectId: '', assigneeId: '' };
+    this.filters = { ...this.filters, status: '', priority: '', projectId: '', assigneeId: '' };
+    this.isAssigneeFilterOpen = false;
     this.loadIssues();
   }
 

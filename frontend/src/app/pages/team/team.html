@@ -21,12 +21,9 @@
     </button>
 
     @for (team of teams; track team.id) {
-      <button class="workspace-card" type="button" [class.active-team]="team.id === activeTeamId" (click)="openTeamDetails(team)">
+      <button class="workspace-card" type="button" (click)="openTeamDetails(team)">
         <span class="workspace-card-top">
           <strong>{{ team.name }}</strong>
-          @if (team.id === activeTeamId) {
-            <span class="badge priority-low">Active</span>
-          }
         </span>
         <span class="workspace-meta">
           <span><strong>{{ team.projectCount }}</strong> projects</span>

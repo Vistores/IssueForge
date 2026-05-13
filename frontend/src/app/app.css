@@ -503,7 +503,7 @@ tbody tr:hover {
   align-items: end;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .toolbar .filters {
@@ -551,10 +551,18 @@ label {
   gap: 7px;
 }
 
-label span {
+label span,
+.filter-field > span {
   color: var(--muted);
   font-size: 13px;
   font-weight: 800;
+}
+
+.filter-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  position: relative;
 }
 
 input,
@@ -1964,6 +1972,70 @@ textarea {
 
 .selectable-avatar {
   cursor: pointer;
+}
+
+.assignee-filter {
+  z-index: 8;
+}
+
+.assignee-filter-button,
+.assignee-filter-option {
+  align-items: center;
+  background: #f8eac7;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-size: 15px;
+  gap: 10px;
+  min-height: 42px;
+  min-width: 0;
+  padding: 7px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.assignee-filter-button:hover,
+.assignee-filter-option:hover,
+.assignee-filter-option.selected {
+  background: #f3dfb4;
+  border-color: #8d6330;
+}
+
+.assignee-filter-button > span:nth-child(2),
+.assignee-filter-option > span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-caret {
+  color: var(--muted);
+  font-weight: 900;
+  margin-left: auto;
+}
+
+.assignee-filter-menu {
+  background: #f8eac7;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 4px;
+  left: 0;
+  max-height: 280px;
+  overflow: auto;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+}
+
+.empty-avatar {
+  font-size: 10px;
 }
 
 .comment-compose {
