@@ -1,5 +1,5 @@
-using GameIssueTracker.Api.Data;
-using GameIssueTracker.Api.Services;
+using IssueForge.Api.Data;
+using IssueForge.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;

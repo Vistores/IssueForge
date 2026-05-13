@@ -1,8 +1,8 @@
-using GameIssueTracker.Api.Models;
-using GameIssueTracker.Api.Services;
+using IssueForge.Api.Models;
+using IssueForge.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameIssueTracker.Api.Data;
+namespace IssueForge.Api.Data;
 
 public static class DbSeeder
 {

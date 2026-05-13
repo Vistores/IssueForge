@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using GameIssueTracker.Api.Data;
+using IssueForge.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameIssueTracker.Api.Services;
+namespace IssueForge.Api.Services;
 
 public class CurrentUserService(IHttpContextAccessor httpContextAccessor, AppDbContext db)
 {

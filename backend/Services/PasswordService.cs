@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace GameIssueTracker.Api.Services;
+namespace IssueForge.Api.Services;
 
 public class PasswordService
 {

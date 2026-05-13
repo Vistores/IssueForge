@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using GameIssueTracker.Api.Models;
+using IssueForge.Api.Models;
 
-namespace GameIssueTracker.Api.DTOs;
+namespace IssueForge.Api.DTOs;
 
 public record IssueDto(
     int Id,

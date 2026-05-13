@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameIssueTracker.Api.DTOs;
+namespace IssueForge.Api.DTOs;
 
 public record ProjectDto(int Id, string Name, string? Description, int IssueCount);
 

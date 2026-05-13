@@ -1,15 +1,15 @@
 using System.Security.Claims;
-using GameIssueTracker.Api.Data;
-using GameIssueTracker.Api.DTOs;
-using GameIssueTracker.Api.Models;
-using GameIssueTracker.Api.Services;
+using IssueForge.Api.Data;
+using IssueForge.Api.DTOs;
+using IssueForge.Api.Models;
+using IssueForge.Api.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameIssueTracker.Api.Controllers;
+namespace IssueForge.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

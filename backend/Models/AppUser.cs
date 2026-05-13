@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameIssueTracker.Api.Models;
+namespace IssueForge.Api.Models;
 
 public class AppUser
 {

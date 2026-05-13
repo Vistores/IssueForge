@@ -1,7 +1,7 @@
-using GameIssueTracker.Api.Models;
+using IssueForge.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GameIssueTracker.Api.Data;
+namespace IssueForge.Api.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

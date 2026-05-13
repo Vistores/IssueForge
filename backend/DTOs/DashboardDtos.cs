@@ -1,4 +1,4 @@
-namespace GameIssueTracker.Api.DTOs;
+namespace IssueForge.Api.DTOs;
 
 public record StatusCountDto(string Status, int Count);
 

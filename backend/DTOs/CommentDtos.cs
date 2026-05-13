@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GameIssueTracker.Api.DTOs;
+namespace IssueForge.Api.DTOs;
 
 public record CommentDto(int Id, int IssueId, string Text, string Author, DateTime CreatedAt);
 

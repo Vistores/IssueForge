@@ -21,7 +21,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class Api {
   private readonly baseUrl = 'http://localhost:5008/api';
-  private readonly teamStorageKey = 'gameIssueTracker.activeTeamId';
+  private readonly teamStorageKey = 'issueForge.activeTeamId';
 
   constructor(private readonly http: HttpClient) {}
 

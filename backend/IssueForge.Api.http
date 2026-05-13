@@ -1,0 +1,6 @@
+@IssueForge.Api_HostAddress = http://localhost:5008
+
+GET {{IssueForge.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

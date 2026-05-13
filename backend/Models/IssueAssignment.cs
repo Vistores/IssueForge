@@ -1,4 +1,4 @@
-namespace GameIssueTracker.Api.Models;
+namespace IssueForge.Api.Models;
 
 public class IssueAssignment
 {

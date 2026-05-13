@@ -13,19 +13,19 @@ import { ActivityPage } from './pages/activity/activity';
 import { authGuard } from './core/services/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: Dashboard, title: 'Dashboard | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'projects', component: ProjectList, title: 'Projects | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'projects/new', component: ProjectForm, title: 'New Project | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'projects/:id/edit', component: ProjectForm, title: 'Edit Project | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'issues', component: IssueList, title: 'Issues | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'issues/new', component: IssueForm, title: 'New Issue | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'issues/:id', component: IssueDetails, title: 'Issue Details | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'issues/:id/edit', component: IssueForm, title: 'Edit Issue | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'teams', component: TeamPage, title: 'Teams | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'stats', component: StatsPage, title: 'Stats | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'activity', component: ActivityPage, title: 'Activity | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'account', component: AccountPage, title: 'Account | GameIssueTracker', canActivate: [authGuard] },
-  { path: 'auth', component: AuthPage, title: 'Sign in | GameIssueTracker' },
+  { path: '', component: Dashboard, title: 'Dashboard | IssueForge', canActivate: [authGuard] },
+  { path: 'projects', component: ProjectList, title: 'Projects | IssueForge', canActivate: [authGuard] },
+  { path: 'projects/new', component: ProjectForm, title: 'New Project | IssueForge', canActivate: [authGuard] },
+  { path: 'projects/:id/edit', component: ProjectForm, title: 'Edit Project | IssueForge', canActivate: [authGuard] },
+  { path: 'issues', component: IssueList, title: 'Issues | IssueForge', canActivate: [authGuard] },
+  { path: 'issues/new', component: IssueForm, title: 'New Issue | IssueForge', canActivate: [authGuard] },
+  { path: 'issues/:id', component: IssueDetails, title: 'Issue Details | IssueForge', canActivate: [authGuard] },
+  { path: 'issues/:id/edit', component: IssueForm, title: 'Edit Issue | IssueForge', canActivate: [authGuard] },
+  { path: 'teams', component: TeamPage, title: 'Teams | IssueForge', canActivate: [authGuard] },
+  { path: 'stats', component: StatsPage, title: 'Stats | IssueForge', canActivate: [authGuard] },
+  { path: 'activity', component: ActivityPage, title: 'Activity | IssueForge', canActivate: [authGuard] },
+  { path: 'account', component: AccountPage, title: 'Account | IssueForge', canActivate: [authGuard] },
+  { path: 'auth', component: AuthPage, title: 'Sign in | IssueForge' },
   { path: 'team', redirectTo: 'teams' },
   { path: '**', redirectTo: '' }
 ];
