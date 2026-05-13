@@ -3,6 +3,7 @@ using IssueForge.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,8 +30,13 @@ var authBuilder = builder.Services
     {
         options.LoginPath = "/api/auth/google";
         options.LogoutPath = "/api/auth/logout";
+        options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+            ? CookieSecurePolicy.SameAsRequest
+            : CookieSecurePolicy.Always;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
         options.Events.OnRedirectToLogin = context =>
         {
             if (context.Request.Path.StartsWithSegments("/api"))
@@ -57,11 +63,16 @@ if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(goo
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>()
+    ?? ["http://localhost:4200", "https://localhost:4200", "http://127.0.0.1:4200"];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AngularClient", policy =>
         policy
-            .WithOrigins("http://localhost:4200", "https://localhost:4200", "http://127.0.0.1:4200")
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -69,11 +80,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    app.UseHsts();
 }
 
 using (var scope = app.Services.CreateScope())
@@ -81,7 +101,10 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var passwords = scope.ServiceProvider.GetRequiredService<PasswordService>();
     db.Database.EnsureCreated();
-    await DbSeeder.SeedAsync(db, passwords);
+    if (builder.Configuration.GetValue("SeedData:Enabled", app.Environment.IsDevelopment()))
+    {
+        await DbSeeder.SeedAsync(db, passwords);
+    }
 }
 
 app.UseHttpsRedirection();

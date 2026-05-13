@@ -102,6 +102,21 @@
   font-size: 13px;
 }
 
+.author-card {
+  align-items: center;
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+.author-card img {
+  background: #050505;
+  border: 1px solid rgba(244, 191, 95, 0.32);
+  border-radius: 8px;
+  grid-row: span 2;
+  height: 42px;
+  object-fit: cover;
+  width: 42px;
+}
+
 .content {
   min-width: 0;
   padding: 32px;
@@ -1609,6 +1624,13 @@ textarea {
   height: 58px;
   justify-content: center;
   width: 58px;
+}
+
+.profile-card .account-avatar.avatar-drop-zone {
+  flex: 0 0 108px;
+  height: 108px;
+  overflow: hidden;
+  width: 108px;
 }
 
 .avatar-edit-hint {

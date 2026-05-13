@@ -3,8 +3,10 @@ services:
     build:
       context: ./backend
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: Data Source=/data/issueforge.db
+      Cors__AllowedOrigins__0: http://localhost:4200
+      SeedData__Enabled: "false"
     ports:
       - "5008:8080"
     volumes:

@@ -21,7 +21,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class Api {
-  private readonly baseUrl = 'http://localhost:5008/api';
+  private readonly baseUrl = this.resolveBaseUrl();
   private readonly teamStorageKey = 'issueForge.activeTeamId';
 
   constructor(private readonly http: HttpClient) {}
@@ -181,5 +181,16 @@ export class Api {
     const headers = teamId ? new HttpHeaders({ 'X-Team-Id': String(teamId) }) : undefined;
 
     return { withCredentials: true, headers };
+  }
+
+  private resolveBaseUrl(): string {
+    const configured = (window as typeof window & { __ISSUEFORGE_API_BASE_URL__?: string }).__ISSUEFORGE_API_BASE_URL__;
+    if (configured) {
+      return configured.replace(/\/$/, '');
+    }
+
+    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5008/api'
+      : `${window.location.origin}/api`;
   }
 }

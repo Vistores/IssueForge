@@ -1,6 +1,6 @@
 # IssueForge
 
-IssueForge is a portfolio-ready full-stack issue and work tracking application for small teams. It helps organize projects, work items, comments, assignments, team roles, activity logs and member statistics in one private workspace.
+IssueForge is a full-stack issue and work tracking application for small teams. It helps organize projects, work items, comments, assignments, team roles, activity logs and member statistics in private workspaces.
 
 It combines a compact issue board, team workspaces, permissions, comments, assignments, attachments and activity tracking in a clean Angular + ASP.NET Core monorepo.
 
@@ -10,7 +10,7 @@ It combines a compact issue board, team workspaces, permissions, comments, assig
 - Backend: ASP.NET Core Web API
 - Database: SQLite with Entity Framework Core
 - API documentation: Swagger / OpenAPI
-- Authentication: local email/password demo auth, optional Google OAuth configuration
+- Authentication: local email/password auth, optional Google OAuth configuration
 - Styling: custom responsive CSS, no heavy UI framework
 - Version control: Git with a structured commit history
 
@@ -46,7 +46,7 @@ It combines a compact issue board, team workspaces, permissions, comments, assig
 - Toast notifications, loading states and empty states
 - Medieval-inspired issue board theme with parchment panels and a custom background
 - DTO-based API responses instead of exposing raw EF entities
-- Seed data for local demo usage
+- Optional seed data for local development
 - CORS configuration for the Angular dev server
 - Docker Compose setup for local container runs
 - GitHub Actions workflow for backend and frontend build checks
@@ -93,9 +93,9 @@ SQLite database file:
 
 - `backend/issueforge.db`
 
-The database is created automatically on startup and seeded with demo data.
+The database is created automatically on startup. Development seed data is enabled through configuration.
 
-Demo account:
+Local development seed account:
 
 - Email: `demo@game.local`
 - Password: `Demo123!`
@@ -218,7 +218,7 @@ Issue priorities:
 - EF Core relationships and SQLite persistence
 - DTOs for API boundaries
 - Team-scoped data access
-- Cookie-based demo authentication
+- Cookie-based authentication with production cookie hardening
 - Optional external OAuth integration point
 - Role-aware authorization checks for team actions, issue editing and comments
 - CRUD operations with proper HTTP status codes
@@ -226,7 +226,7 @@ Issue priorities:
 - Swagger/OpenAPI documentation
 - Clean monorepo organization
 - Practical Git workflow and commit history
-- Portfolio-focused README and project presentation
+- Clear README and deployment-oriented project presentation
 - Docker Compose foundations
 - GitHub Actions build workflow
 
@@ -250,4 +250,4 @@ Issue priorities:
 - Notifications for assignment and status changes
 - Unit and integration tests
 - API-level tests for team permissions and ownership transfer
-- Hosted demo deployment
+- Hosted production deployment

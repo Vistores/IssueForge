@@ -13,8 +13,8 @@ import { Toast } from '../../core/services/toast';
 export class AuthPage implements OnInit {
   auth?: AuthStatus;
   inviteCode = '';
-  loginEmail = 'demo@game.local';
-  loginPassword = 'Demo123!';
+  loginEmail = '';
+  loginPassword = '';
   registerName = '';
   registerEmail = '';
   registerPassword = '';
