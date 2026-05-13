@@ -15,6 +15,8 @@ export class TeamPage implements OnInit {
   activeTeamId: number | null = null;
   selectedTeam?: Team;
   pendingOwnerTransfer?: TeamMember;
+  isTeamCreateModalOpen = false;
+  teamMode: 'create' | 'join' = 'create';
   teamName = 'New QA Guild';
   inviteCode = '';
   isLoading = true;
@@ -51,6 +53,7 @@ export class TeamPage implements OnInit {
       next: team => {
         this.teams = [...this.teams, team];
         this.selectTeam(team);
+        this.closeTeamCreateModal();
         this.toast.success('Team created.');
       },
       error: () => this.toast.error('Could not create team.')
@@ -65,6 +68,7 @@ export class TeamPage implements OnInit {
           this.teams = [...this.teams, joinedTeam];
         }
         this.selectTeam(joinedTeam);
+        this.closeTeamCreateModal();
         this.toast.success('Joined team.');
       },
       error: () => this.toast.error('Invite code was not found.')
@@ -83,6 +87,15 @@ export class TeamPage implements OnInit {
 
   closeTeamDetails(): void {
     this.selectedTeam = undefined;
+  }
+
+  openTeamCreateModal(mode: 'create' | 'join' = 'create'): void {
+    this.teamMode = mode;
+    this.isTeamCreateModalOpen = true;
+  }
+
+  closeTeamCreateModal(): void {
+    this.isTeamCreateModalOpen = false;
   }
 
   isCurrentUser(member: TeamMember): boolean {

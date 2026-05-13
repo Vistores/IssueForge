@@ -1,8 +1,8 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Quest workflow</p>
-    <h1>Bug reports and technical quests</h1>
-    <p>Drag parchment cards between statuses, triage priority inline, or switch to a ledger table for precise scanning.</p>
+    <p class="eyebrow">Issue workflow</p>
+    <h1>Issues and work requests</h1>
+    <p>Drag cards between statuses, triage priority inline, or switch to a ledger table for precise scanning.</p>
   </div>
   <button class="button primary" type="button" (click)="openCreateModal()">New issue</button>
 </section>
@@ -35,6 +35,16 @@
         <option value="">All projects</option>
         @for (project of projects; track project.id) {
           <option [ngValue]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Assigned to</span>
+      <select [(ngModel)]="filters.assigneeId" (change)="loadIssues()">
+        <option value="">Anyone</option>
+        @for (member of members; track member.id) {
+          <option [ngValue]="member.id">{{ member.displayName }}</option>
         }
       </select>
     </label>
@@ -86,7 +96,7 @@
                 <span>{{ issue.commentCount }} comments</span>
               </div>
 
-              <button class="assignee-stack" type="button" (click)="openAssignees(issue, $event)">
+              <button class="assignee-stack card-assignee-action" type="button" (click)="openAssignees(issue, $event)" title="View or change assignees">
                 @for (assignee of issue.assignees.slice(0, 4); track assignee.memberId) {
                   <span class="avatar-chip" [title]="assignee.displayName">
                     @if (assignee.avatarUrl) {
@@ -95,19 +105,21 @@
                       {{ assignee.displayName.slice(0, 1) }}
                     }
                   </span>
-                } @empty {
+                }
+                <span class="avatar-chip add-assignee-chip" (click)="assignSelf(issue, $event)" title="Assign to me">+</span>
+                @if (!issue.assignees.length) {
                   <span class="unassigned">Unassigned</span>
                 }
               </button>
 
               <div class="card-actions">
-                <select #boardStatus [value]="issue.status" (change)="changeStatus(issue, boardStatus.value)">
+                <select [ngModel]="issue.status" (click)="$event.stopPropagation()" (ngModelChange)="changeStatus(issue, $event)">
                   @for (option of statuses; track option) {
                     <option [value]="option">{{ option }}</option>
                   }
                 </select>
 
-                <select #boardPriority [value]="issue.priority" (change)="changePriority(issue, boardPriority.value)">
+                <select [ngModel]="issue.priority" (click)="$event.stopPropagation()" (ngModelChange)="changePriority(issue, $event)">
                   @for (priority of priorities; track priority) {
                     <option [value]="priority">{{ priority }}</option>
                   }
@@ -115,7 +127,7 @@
               </div>
             </article>
           } @empty {
-            <div class="empty-drop">Drop quests here</div>
+            <div class="empty-drop">Drop issues here</div>
           }
         </div>
       </article>
@@ -148,14 +160,14 @@
               </button>
             </td>
             <td>
-              <select #rowStatus class="inline-select" [value]="issue.status" (change)="changeStatus(issue, rowStatus.value)">
+              <select class="inline-select" [ngModel]="issue.status" (ngModelChange)="changeStatus(issue, $event)">
                 @for (status of statuses; track status) {
                   <option [value]="status">{{ status }}</option>
                 }
               </select>
             </td>
             <td>
-              <select #rowPriority class="inline-select priority-{{ issue.priority.toLowerCase() }}" [value]="issue.priority" (change)="changePriority(issue, rowPriority.value)">
+              <select class="inline-select priority-{{ issue.priority.toLowerCase() }}" [ngModel]="issue.priority" (ngModelChange)="changePriority(issue, $event)">
                 @for (priority of priorities; track priority) {
                   <option [value]="priority">{{ priority }}</option>
                 }
@@ -218,10 +230,10 @@
         </dl>
 
         <div class="assignee-section">
-          <strong>Working on this quest</strong>
-          <div class="member-pill-list">
+          <strong>Working on this issue</strong>
+          <div class="member-pill-list interactive-members">
             @for (assignee of selectedIssue.assignees; track assignee.memberId) {
-              <span class="member-pill">
+              <button class="member-pill" type="button" (click)="openAssignees(selectedIssue, $event)">
                 <span class="avatar-chip">
                   @if (assignee.avatarUrl) {
                     <img [src]="assignee.avatarUrl" [alt]="assignee.displayName" />
@@ -230,15 +242,35 @@
                   }
                 </span>
                 {{ assignee.displayName }}
-              </span>
+              </button>
             } @empty {
               <span class="muted">No assignees yet.</span>
+            }
+            <button class="member-pill add-member-pill" type="button" (click)="assignSelf(selectedIssue, $event)">
+              <span class="avatar-chip add-assignee-chip">+</span>
+              Assign me
+            </button>
+          </div>
+          <div class="assignee-picker compact-assignee-picker">
+            @for (member of members; track member.id) {
+              <button
+                class="avatar-chip selectable-avatar"
+                type="button"
+                [class.selected]="isIssueAssignedTo(selectedIssue, member.id)"
+                [title]="member.displayName"
+                (click)="toggleIssueAssignee(selectedIssue, member, $event)"
+              >
+                @if (member.avatarUrl) {
+                  <img [src]="member.avatarUrl" [alt]="member.displayName" />
+                } @else {
+                  {{ member.displayName.slice(0, 1) }}
+                }
+              </button>
             }
           </div>
         </div>
 
         <div class="drawer-actions">
-          <button class="button ghost" type="button" (click)="copyDescription(selectedIssue)">Copy description</button>
           <button class="button ghost" type="button" (click)="openEditModal(selectedIssue)">Edit</button>
         </div>
       </article>
@@ -265,13 +297,24 @@
                   <p class="comment-text">{{ comment.text }}</p>
                 </div>
                 <div class="comment-footer">
-                  <button class="button ghost compact-button" type="button" (click)="copyComment(comment)">Copy</button>
+                  <button class="button danger compact-button" type="button" (click)="deletePreviewComment(comment)">Delete</button>
                 </div>
               </article>
             } @empty {
               <p class="muted">No comments yet.</p>
             }
           </div>
+          <form class="comment-compose" (submit)="$event.preventDefault(); addCommentFromPreview()">
+            <label>
+              <span>Author</span>
+              <input [(ngModel)]="commentForm.author" name="previewAuthor" />
+            </label>
+            <label>
+              <span>Comment</span>
+              <textarea [(ngModel)]="commentForm.text" name="previewComment" rows="5" placeholder="Write an update, decision, blocker, or test result"></textarea>
+            </label>
+            <button class="button primary" type="submit">Add comment</button>
+          </form>
         }
       </aside>
     </div>
@@ -283,7 +326,7 @@
   <section class="center-modal compact-modal" role="dialog" aria-modal="true">
     <header class="modal-title-row">
       <div>
-        <p class="eyebrow">Quest party</p>
+        <p class="eyebrow">Assigned teammates</p>
         <h2>{{ selectedAssigneeIssue.title }}</h2>
       </div>
       <button class="drawer-close" type="button" (click)="closeAssignees()">Close</button>
@@ -304,8 +347,25 @@
           </div>
         </article>
       } @empty {
-        <p class="muted">Nobody has taken this quest yet.</p>
+        <p class="muted">Nobody has taken this issue yet.</p>
       }
+    </div>
+    <div class="assignee-picker">
+      <strong>Assign or remove teammates</strong>
+      <div class="member-checkbox-grid">
+        @for (member of members; track member.id) {
+          <button class="member-check as-button" type="button" [class.selected]="isIssueAssignedTo(selectedAssigneeIssue, member.id)" (click)="toggleIssueAssignee(selectedAssigneeIssue, member, $event)">
+            <span class="avatar-chip">
+              @if (member.avatarUrl) {
+                <img [src]="member.avatarUrl" [alt]="member.displayName" />
+              } @else {
+                {{ member.displayName.slice(0, 1) }}
+              }
+            </span>
+            <span>{{ member.displayName }}</span>
+          </button>
+        }
+      </div>
     </div>
   </section>
 }

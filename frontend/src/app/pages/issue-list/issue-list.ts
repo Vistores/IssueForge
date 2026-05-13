@@ -2,7 +2,7 @@ import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Comment, Issue, IssuePriority, IssueStatus, Project, TeamMember } from '../../core/models/api.models';
+import { AuthStatus, Comment, Issue, IssuePriority, IssueStatus, Project, TeamMember } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
@@ -19,6 +19,7 @@ export class IssueList implements OnInit {
   issues: Issue[] = [];
   projects: Project[] = [];
   members: TeamMember[] = [];
+  auth?: AuthStatus;
   selectedIssue?: Issue;
   selectedComments: Comment[] = [];
   selectedAssigneeIssue?: Issue;
@@ -36,11 +37,16 @@ export class IssueList implements OnInit {
   isLoading = true;
   error = '';
   isUpdating = false;
+  commentForm = {
+    author: 'QA Tester',
+    text: ''
+  };
 
-  filters: { status: IssueStatus | ''; priority: IssuePriority | ''; projectId: number | '' } = {
+  filters: { status: IssueStatus | ''; priority: IssuePriority | ''; projectId: number | ''; assigneeId: number | '' } = {
     status: '',
     priority: '',
-    projectId: ''
+    projectId: '',
+    assigneeId: ''
   };
 
   constructor(
@@ -49,6 +55,12 @@ export class IssueList implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.api.getAuthStatus().subscribe({
+      next: auth => {
+        this.auth = auth;
+        this.commentForm.author = auth.name ?? 'QA Tester';
+      }
+    });
     this.api.getProjects().subscribe({ next: projects => (this.projects = projects) });
     this.api.getTeams().subscribe({
       next: teams => {
@@ -106,6 +118,7 @@ export class IssueList implements OnInit {
   openPreview(issue: Issue): void {
     this.selectedIssue = issue;
     this.selectedComments = [];
+    this.commentForm.text = '';
     this.isPreviewLoading = true;
     this.api.getComments(issue.id).subscribe({
       next: comments => {
@@ -222,8 +235,85 @@ export class IssueList implements OnInit {
       .catch(() => this.toast.error('Could not copy comment.'));
   }
 
+  addCommentFromPreview(): void {
+    if (!this.selectedIssue || !this.commentForm.text.trim()) {
+      this.toast.error('Comment text is required.');
+      return;
+    }
+
+    this.api
+      .addComment(this.selectedIssue.id, {
+        author: (this.commentForm.author || this.auth?.name || 'QA Tester').trim(),
+        text: this.commentForm.text.trim()
+      })
+      .subscribe({
+        next: comment => {
+          this.selectedComments = [...this.selectedComments, comment];
+          this.selectedIssue = {
+            ...this.selectedIssue!,
+            commentCount: this.selectedIssue!.commentCount + 1,
+            updatedAt: new Date().toISOString()
+          };
+          this.issues = this.issues.map(issue => (issue.id === this.selectedIssue!.id ? this.selectedIssue! : issue));
+          this.commentForm.text = '';
+          this.toast.success('Comment added.');
+        },
+        error: () => this.toast.error('Could not add comment.')
+      });
+  }
+
+  deletePreviewComment(comment: Comment): void {
+    if (!this.selectedIssue || !confirm('Delete this comment?')) {
+      return;
+    }
+
+    this.api.deleteComment(this.selectedIssue.id, comment.id).subscribe({
+      next: () => {
+        this.selectedComments = this.selectedComments.filter(item => item.id !== comment.id);
+        this.selectedIssue = {
+          ...this.selectedIssue!,
+          commentCount: Math.max(0, this.selectedIssue!.commentCount - 1),
+          updatedAt: new Date().toISOString()
+        };
+        this.issues = this.issues.map(issue => (issue.id === this.selectedIssue!.id ? this.selectedIssue! : issue));
+        this.toast.success('Comment deleted.');
+      },
+      error: () => this.toast.error('Could not delete comment.')
+    });
+  }
+
+  toggleIssueAssignee(issue: Issue, member: TeamMember, event?: Event): void {
+    event?.stopPropagation();
+    const assigned = issue.assignees.some(assignee => assignee.memberId === member.id);
+    const assignedMemberIds = assigned
+      ? issue.assignees.map(assignee => assignee.memberId).filter(id => id !== member.id)
+      : [...issue.assignees.map(assignee => assignee.memberId), member.id];
+
+    this.saveIssueAssignments(issue, assignedMemberIds);
+  }
+
+  assignSelf(issue: Issue, event?: Event): void {
+    event?.stopPropagation();
+    const currentMember = this.members.find(member => member.userId === this.auth?.userId);
+    if (!currentMember) {
+      this.toast.error('Your team member profile was not found.');
+      return;
+    }
+
+    if (issue.assignees.some(assignee => assignee.memberId === currentMember.id)) {
+      this.toast.success('You are already assigned.');
+      return;
+    }
+
+    this.saveIssueAssignments(issue, [...issue.assignees.map(assignee => assignee.memberId), currentMember.id]);
+  }
+
+  isIssueAssignedTo(issue: Issue, memberId: number): boolean {
+    return issue.assignees.some(assignee => assignee.memberId === memberId);
+  }
+
   clearFilters(): void {
-    this.filters = { status: '', priority: '', projectId: '' };
+    this.filters = { status: '', priority: '', projectId: '', assigneeId: '' };
     this.loadIssues();
   }
 
@@ -272,6 +362,45 @@ export class IssueList implements OnInit {
           issue.priority = previous.priority;
           this.isUpdating = false;
           this.toast.error('Could not update issue.');
+        }
+      });
+  }
+
+  private saveIssueAssignments(issue: Issue, assignedMemberIds: number[]): void {
+    this.isUpdating = true;
+    this.api
+      .updateIssue(issue.id, {
+        title: issue.title,
+        description: issue.description,
+        projectId: issue.projectId,
+        status: issue.status,
+        priority: issue.priority,
+        assignedMemberIds
+      })
+      .subscribe({
+        next: () => {
+          const assignees = this.members
+            .filter(member => assignedMemberIds.includes(member.id))
+            .map(member => ({
+              memberId: member.id,
+              displayName: member.displayName,
+              role: member.role,
+              avatarUrl: member.avatarUrl
+            }));
+          const updatedIssue = { ...issue, assignees, updatedAt: new Date().toISOString() };
+          this.issues = this.issues.map(item => (item.id === issue.id ? updatedIssue : item));
+          if (this.selectedIssue?.id === issue.id) {
+            this.selectedIssue = updatedIssue;
+          }
+          if (this.selectedAssigneeIssue?.id === issue.id) {
+            this.selectedAssigneeIssue = updatedIssue;
+          }
+          this.isUpdating = false;
+          this.toast.success('Assignees updated.');
+        },
+        error: () => {
+          this.isUpdating = false;
+          this.toast.error('Could not update assignees.');
         }
       });
   }

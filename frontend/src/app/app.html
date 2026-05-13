@@ -2,30 +2,25 @@
   @if (!isAccessRoute) {
   <aside class="sidebar">
     <a class="brand" routerLink="/">
-      <span class="brand-mark">GI</span>
-      <span>
-        <strong>GameIssueTracker</strong>
-        <small>Quest board</small>
-      </span>
+        <span class="brand-mark">GI</span>
+        <span>
+          <strong>GameIssueTracker</strong>
+        <small>Issue workspace</small>
+        </span>
     </a>
 
     <nav class="nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
       <a routerLink="/projects" routerLinkActive="active">Projects</a>
       <a routerLink="/issues" routerLinkActive="active">Issues</a>
-      <a routerLink="/teams" routerLinkActive="active">
-        <span>Teams</span>
-        @if (activeTeamName) {
-          <small>{{ activeTeamName }}</small>
-        }
-      </a>
+      <a routerLink="/teams" routerLinkActive="active">Teams</a>
       <a routerLink="/stats" routerLinkActive="active">Stats</a>
       <a routerLink="/activity" routerLinkActive="active">Logs</a>
       <a routerLink="/account" routerLinkActive="active">Account</a>
     </nav>
 
     <div class="sidebar-note">
-      <span>Guild ledger</span>
+      <span>Portfolio stack</span>
       <strong>Angular + ASP.NET + SQLite</strong>
     </div>
   </aside>

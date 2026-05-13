@@ -49,7 +49,7 @@ export class Api {
     return this.http.delete<void>(`${this.baseUrl}/projects/${id}`, this.requestOptions());
   }
 
-  getIssues(filters: { status?: IssueStatus | ''; priority?: IssuePriority | ''; projectId?: number | '' } = {}) {
+  getIssues(filters: { status?: IssueStatus | ''; priority?: IssuePriority | ''; projectId?: number | ''; assigneeId?: number | '' } = {}) {
     let params = new HttpParams();
 
     if (filters.status) {
@@ -62,6 +62,10 @@ export class Api {
 
     if (filters.projectId) {
       params = params.set('projectId', filters.projectId);
+    }
+
+    if (filters.assigneeId) {
+      params = params.set('assigneeId', filters.assigneeId);
     }
 
     return this.http.get<Issue[]>(`${this.baseUrl}/issues`, { ...this.requestOptions(), params });

@@ -1,8 +1,8 @@
-<section class="page-header">
+<section class="page-header account-header">
   <div>
     <p class="eyebrow">Account</p>
     <h1>Your profile</h1>
-    <p>Manage the signed-in portfolio demo account separately from team workspaces.</p>
+    <p>Manage your signed-in portfolio demo account separately from team workspaces.</p>
   </div>
 </section>
 
@@ -25,26 +25,57 @@
       @if (auth?.avatarUrl) {
         <img [src]="auth?.avatarUrl" alt="Profile avatar" />
       } @else {
-        GI
+        {{ (auth?.name || 'GI').slice(0, 1) }}
       }
+      <span class="avatar-edit-hint">Change</span>
     </button>
 
     <div class="profile-copy">
       <span class="eyebrow">Signed in as</span>
       <h2>{{ auth?.name || 'Signed-in user' }}</h2>
       <p>{{ auth?.email || 'No email claim returned' }}</p>
-      <small>Click the avatar, drop an image here, or paste an image from the clipboard.</small>
+      <small>Click the avatar, drop an image onto it, or paste an image from the clipboard.</small>
     </div>
 
-    <div class="profile-actions">
-      <label>
-        <span>Avatar URL</span>
-        <input [(ngModel)]="avatarUrl" placeholder="https://example.com/avatar.png" />
-      </label>
-      <div class="form-actions">
-        <button class="button ghost" type="button" (click)="saveAvatar()">Save URL</button>
-        <button class="button danger" type="button" (click)="logout()">Sign out</button>
+    <div class="profile-actions profile-actions-inline">
+      <button class="button danger" type="button" (click)="logout()">Sign out</button>
+    </div>
+  </section>
+}
+
+@if (pendingAvatarDataUrl) {
+  <div class="modal-backdrop" (click)="closeAvatarCrop()"></div>
+  <section class="center-modal compact-modal avatar-crop-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Profile photo</p>
+        <h2>Crop avatar</h2>
       </div>
+      <button class="drawer-close" type="button" (click)="closeAvatarCrop()">Close</button>
+    </header>
+
+    <div class="avatar-crop-frame">
+      <img [src]="pendingAvatarDataUrl" alt="Avatar preview" [style.transform]="cropTransform" />
+    </div>
+
+    <div class="avatar-crop-controls">
+      <label>
+        <span>Zoom</span>
+        <input type="range" min="1" max="2.4" step="0.05" [(ngModel)]="avatarScale" />
+      </label>
+      <label>
+        <span>Horizontal</span>
+        <input type="range" min="-60" max="60" step="1" [(ngModel)]="avatarOffsetX" />
+      </label>
+      <label>
+        <span>Vertical</span>
+        <input type="range" min="-60" max="60" step="1" [(ngModel)]="avatarOffsetY" />
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="button ghost" type="button" (click)="closeAvatarCrop()">Cancel</button>
+      <button class="button primary" type="button" (click)="saveCroppedAvatar()">Save avatar</button>
     </div>
   </section>
 }

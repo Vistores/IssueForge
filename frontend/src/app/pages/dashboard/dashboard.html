@@ -1,10 +1,10 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Guild command table</p>
-    <h1>Quest board dashboard</h1>
-    <p>Track project health, critical defects and the current workflow state like a medieval guild ledger.</p>
+    <p class="eyebrow">Workspace command table</p>
+    <h1>Issue board dashboard</h1>
+    <p>Track project health, important work items and the current workflow state in one shared team ledger.</p>
   </div>
-  <a class="button primary" routerLink="/issues/new">Create issue</a>
+  <a class="button primary" routerLink="/issues">Create issue</a>
 </section>
 
 @if (isLoading) {
@@ -22,7 +22,7 @@
       <div class="metric-icon">#</div>
       <span>Total issues</span>
       <strong>{{ summary.totalIssues }}</strong>
-      <small>All tracked QA work</small>
+      <small>All tracked team work</small>
     </article>
     <article class="metric">
       <div class="metric-icon open">!</div>
@@ -76,7 +76,12 @@
             <span class="status-dot status-{{ issue.status.toLowerCase() }}"></span>
             <span>
               <strong>{{ issue.title }}</strong>
-              <small>{{ issue.projectName }} · {{ issue.updatedAt | date: 'mediumDate' }}</small>
+              <small>
+                {{ issue.projectName }} · {{ issue.updatedAt | date: 'medium' }}
+                @if (recentActivityFor(issue)?.actorName) {
+                  · by {{ recentActivityFor(issue)?.actorName }}
+                }
+              </small>
             </span>
           </a>
         }

@@ -15,6 +15,10 @@ export class AccountPage implements OnInit {
   avatarUrl = '';
   isLoading = true;
   isDragOver = false;
+  pendingAvatarDataUrl = '';
+  avatarScale = 1;
+  avatarOffsetX = 0;
+  avatarOffsetY = 0;
 
   constructor(
     private readonly api: Api,
@@ -44,6 +48,10 @@ export class AccountPage implements OnInit {
     });
   }
 
+  get cropTransform(): string {
+    return `translate(${this.avatarOffsetX}px, ${this.avatarOffsetY}px) scale(${this.avatarScale})`;
+  }
+
   triggerFile(input: HTMLInputElement): void {
     input.click();
   }
@@ -54,6 +62,7 @@ export class AccountPage implements OnInit {
     if (file) {
       this.readAvatarFile(file);
     }
+    input.value = '';
   }
 
   handleDrop(event: DragEvent): void {
@@ -83,6 +92,50 @@ export class AccountPage implements OnInit {
     });
   }
 
+  closeAvatarCrop(): void {
+    this.pendingAvatarDataUrl = '';
+  }
+
+  saveCroppedAvatar(): void {
+    if (!this.pendingAvatarDataUrl) {
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => {
+      const size = 320;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        this.toast.error('Could not prepare avatar image.');
+        return;
+      }
+
+      context.fillStyle = '#f3dfb4';
+      context.fillRect(0, 0, size, size);
+      context.save();
+      context.beginPath();
+      context.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      context.clip();
+
+      const baseScale = Math.max(size / image.width, size / image.height);
+      const drawWidth = image.width * baseScale * this.avatarScale;
+      const drawHeight = image.height * baseScale * this.avatarScale;
+      const x = (size - drawWidth) / 2 + this.avatarOffsetX * 2;
+      const y = (size - drawHeight) / 2 + this.avatarOffsetY * 2;
+      context.drawImage(image, x, y, drawWidth, drawHeight);
+      context.restore();
+
+      this.avatarUrl = canvas.toDataURL('image/png');
+      this.pendingAvatarDataUrl = '';
+      this.saveAvatar();
+    };
+    image.onerror = () => this.toast.error('Could not read avatar image.');
+    image.src = this.pendingAvatarDataUrl;
+  }
+
   private readAvatarFile(file: File): void {
     if (!file.type.startsWith('image/')) {
       this.toast.error('Please choose an image file.');
@@ -91,8 +144,10 @@ export class AccountPage implements OnInit {
 
     const reader = new FileReader();
     reader.onload = () => {
-      this.avatarUrl = String(reader.result ?? '');
-      this.saveAvatar();
+      this.pendingAvatarDataUrl = String(reader.result ?? '');
+      this.avatarScale = 1;
+      this.avatarOffsetX = 0;
+      this.avatarOffsetY = 0;
     };
     reader.readAsDataURL(file);
   }

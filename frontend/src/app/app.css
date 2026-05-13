@@ -47,6 +47,7 @@
 .brand strong,
 .brand small {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .brand small {
@@ -60,8 +61,12 @@
 }
 
 .nav a {
+  align-items: center;
   border-radius: 8px;
   color: #e8d8b4;
+  display: flex;
+  font-size: 16px;
+  font-weight: 800;
   padding: 11px 12px;
   text-decoration: none;
   transition: background 160ms ease, color 160ms ease, transform 160ms ease;
@@ -143,7 +148,7 @@
 
 .page-header h1 {
   color: #ffe8b5;
-  font-size: 34px;
+  font-size: 36px;
   line-height: 1.15;
   margin: 0 0 8px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
@@ -151,6 +156,8 @@
 
 .page-header p {
   color: #e7c986;
+  font-size: 16px;
+  line-height: 1.45;
   margin: 0;
   max-width: 720px;
 }
@@ -406,7 +413,8 @@ th,
 td {
   border-bottom: 1px solid rgba(117, 78, 35, 0.35);
   border-right: 1px solid rgba(117, 78, 35, 0.24);
-  padding: 14px 10px;
+  font-size: 15px;
+  padding: 16px 12px;
   text-align: left;
   vertical-align: middle;
 }
@@ -419,6 +427,7 @@ td:last-child {
 th {
   color: var(--muted);
   font-size: 13px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -494,7 +503,7 @@ tbody tr:hover {
   align-items: end;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .toolbar .filters {
@@ -555,6 +564,7 @@ textarea {
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text);
+  font-size: 15px;
   min-height: 42px;
   padding: 10px 12px;
   width: 100%;
@@ -862,19 +872,26 @@ textarea {
 }
 
 .card-main {
-  background: none;
-  border: 0;
+  background: rgba(255, 248, 220, 0.32);
+  border: 1px solid rgba(117, 78, 35, 0.18);
+  border-radius: 6px;
   color: inherit;
   cursor: pointer;
   display: grid;
   gap: 7px;
-  padding: 0;
+  padding: 10px;
   text-align: left;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.card-main:hover {
+  background: rgba(255, 248, 220, 0.58);
+  border-color: rgba(117, 78, 35, 0.38);
 }
 
 .card-title {
   color: #2d1b0f;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 850;
   line-height: 1.3;
 }
@@ -882,7 +899,7 @@ textarea {
 .card-description {
   color: #765b34;
   display: -webkit-box;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.45;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -893,7 +910,7 @@ textarea {
   color: #745024;
   display: flex;
   flex-wrap: wrap;
-  font-size: 12px;
+  font-size: 13px;
   gap: 8px;
 }
 
@@ -1036,7 +1053,7 @@ textarea {
 
 .issue-modal-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  grid-template-columns: minmax(0, 1fr) 390px;
   min-height: 0;
 }
 
@@ -1050,10 +1067,13 @@ textarea {
 .issue-modal-comments {
   background: rgba(91, 55, 20, 0.08);
   border-left: 1px solid rgba(156, 113, 55, 0.36);
+  display: grid;
+  gap: 14px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .modal-comment-list {
-  max-height: 560px;
+  max-height: 390px;
   overflow: auto;
   padding-right: 2px;
 }
@@ -1512,7 +1532,7 @@ textarea {
   align-items: center;
   display: grid;
   gap: 26px;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   margin: 0 auto;
   max-width: 940px;
   padding: 28px;
@@ -1536,13 +1556,18 @@ textarea {
 .profile-actions {
   display: grid;
   gap: 12px;
-  grid-column: 1 / -1;
   width: 100%;
 }
 
+.profile-actions-inline {
+  justify-items: end;
+}
+
 .avatar-drop-zone {
+  border-radius: 999px;
   cursor: pointer;
   height: 108px;
+  position: relative;
   width: 108px;
 }
 
@@ -1554,13 +1579,35 @@ textarea {
   align-items: center;
   background: linear-gradient(135deg, #c8942e, #7a2e13);
   border: 1px solid rgba(255, 229, 166, 0.42);
-  border-radius: 10px;
+  border-radius: 999px;
   color: #fff2cf;
   display: inline-flex;
   font-weight: 900;
   height: 58px;
   justify-content: center;
   width: 58px;
+}
+
+.avatar-edit-hint {
+  align-items: center;
+  background: rgba(35, 17, 7, 0.78);
+  bottom: 0;
+  color: #fff2cf;
+  display: flex;
+  font-size: 11px;
+  font-weight: 900;
+  height: 30%;
+  justify-content: center;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  transition: opacity 140ms ease;
+}
+
+.avatar-drop-zone:hover .avatar-edit-hint,
+.avatar-drop-zone:focus-visible .avatar-edit-hint {
+  opacity: 1;
 }
 
 .account-details {
@@ -1581,9 +1628,7 @@ textarea {
 }
 
 .team-command-grid {
-  display: grid;
-  gap: 18px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: none;
 }
 
 .team-insights-grid {
@@ -1595,7 +1640,7 @@ textarea {
 .team-card-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .workspace-card {
@@ -1610,9 +1655,38 @@ textarea {
   cursor: pointer;
   display: grid;
   gap: 16px;
+  min-height: 238px;
   padding: 18px;
   text-align: left;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.workspace-card-add {
+  align-content: center;
+  background:
+    linear-gradient(135deg, rgba(244, 191, 95, 0.13), rgba(19, 8, 2, 0.76)),
+    rgba(32, 14, 5, 0.78);
+  border-color: rgba(220, 171, 83, 0.48);
+  color: #ffe8b5;
+  justify-items: center;
+  text-align: center;
+}
+
+.workspace-card-add small {
+  color: #d8bf8c;
+  line-height: 1.4;
+}
+
+.workspace-add-mark {
+  align-items: center;
+  border: 1px dashed rgba(244, 191, 95, 0.7);
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 32px;
+  font-weight: 900;
+  height: 64px;
+  justify-content: center;
+  width: 64px;
 }
 
 .workspace-card:hover {
@@ -1631,6 +1705,11 @@ textarea {
 .workspace-card-top strong {
   font-size: 20px;
   overflow-wrap: anywhere;
+}
+
+.modal-tabs {
+  margin-bottom: 16px;
+  width: max-content;
 }
 
 .workspace-meta {
@@ -1787,13 +1866,15 @@ textarea {
 
 .assignee-stack {
   align-items: center;
-  background: transparent;
-  border: 0;
+  background: rgba(91, 55, 20, 0.08);
+  border: 1px solid rgba(117, 78, 35, 0.24);
+  border-radius: 999px;
   cursor: pointer;
   display: flex;
-  gap: 0;
+  gap: 6px;
   justify-content: flex-start;
-  padding: 0;
+  padding: 5px 8px;
+  width: max-content;
 }
 
 .assignee-stack .avatar-chip + .avatar-chip {
@@ -1803,7 +1884,7 @@ textarea {
 .unassigned,
 .assignee-inline {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -1839,6 +1920,113 @@ textarea {
   display: inline-flex;
   gap: 8px;
   padding: 6px 10px;
+}
+
+.member-pill {
+  color: var(--text);
+  cursor: pointer;
+}
+
+.member-check.as-button {
+  color: var(--text);
+  cursor: pointer;
+}
+
+.member-check.selected,
+.selectable-avatar.selected {
+  box-shadow: 0 0 0 3px rgba(66, 106, 42, 0.25);
+  border-color: #426a2a;
+}
+
+.add-assignee-chip {
+  background: #f0d8a3;
+  border-style: dashed;
+  color: #8d3f1b;
+}
+
+.add-member-pill {
+  font-weight: 900;
+}
+
+.interactive-members {
+  align-items: center;
+}
+
+.compact-assignee-picker {
+  background: rgba(91, 55, 20, 0.06);
+  border: 1px solid rgba(117, 78, 35, 0.22);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  padding: 8px;
+}
+
+.selectable-avatar {
+  cursor: pointer;
+}
+
+.comment-compose {
+  border-top: 1px solid rgba(156, 113, 55, 0.34);
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.comment-compose label {
+  display: grid;
+  gap: 5px;
+}
+
+.comment-compose span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.avatar-crop-modal {
+  text-align: left;
+}
+
+.avatar-crop-frame {
+  background:
+    radial-gradient(circle, transparent 0 49%, rgba(35, 17, 7, 0.58) 50%),
+    rgba(91, 55, 20, 0.12);
+  border: 1px solid rgba(117, 78, 35, 0.4);
+  border-radius: 999px;
+  height: 260px;
+  margin: 0 auto 18px;
+  overflow: hidden;
+  position: relative;
+  width: 260px;
+}
+
+.avatar-crop-frame img {
+  height: 100%;
+  left: 0;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  transform-origin: center;
+  width: 100%;
+}
+
+.avatar-crop-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.avatar-crop-controls label {
+  display: grid;
+  gap: 6px;
+}
+
+.avatar-crop-controls span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
 }
 
 .member-card {

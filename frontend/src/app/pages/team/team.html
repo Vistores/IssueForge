@@ -13,29 +13,13 @@
     <p class="state error">{{ error }}</p>
   }
 
-  <section class="team-command-grid">
-    <article class="panel team-command-card">
-      <h2>Create team</h2>
-      <p class="muted">Use a team per game, client, class project, or QA group.</p>
-      <label>
-        <span>Team name</span>
-        <input [(ngModel)]="teamName" />
-      </label>
-      <button class="button primary" type="button" (click)="createTeam()">Create team</button>
-    </article>
-
-    <article class="panel team-command-card">
-      <h2>Join team</h2>
-      <p class="muted">Paste an invite code from another team member.</p>
-      <label>
-        <span>Invite code</span>
-        <input [(ngModel)]="inviteCode" placeholder="GUILD-2026" />
-      </label>
-      <button class="button ghost" type="button" (click)="joinTeam()">Join by code</button>
-    </article>
-  </section>
-
   <section class="team-card-grid">
+    <button class="workspace-card workspace-card-add" type="button" (click)="openTeamCreateModal()">
+      <span class="workspace-add-mark">+</span>
+      <strong>Create or join team</strong>
+      <small>Open one compact form for a new workspace or invite code.</small>
+    </button>
+
     @for (team of teams; track team.id) {
       <button class="workspace-card" type="button" [class.active-team]="team.id === activeTeamId" (click)="openTeamDetails(team)">
         <span class="workspace-card-top">
@@ -65,6 +49,44 @@
       <div class="empty-team-state">
         <h3>No team yet</h3>
         <p>Create your own team or join with an invite code before opening the dashboard.</p>
+      </div>
+    }
+  </section>
+}
+
+@if (isTeamCreateModalOpen) {
+  <div class="modal-backdrop" (click)="closeTeamCreateModal()"></div>
+  <section class="center-modal compact-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Team access</p>
+        <h2>Create or join workspace</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeTeamCreateModal()">Close</button>
+    </header>
+
+    <div class="view-toggle modal-tabs">
+      <button type="button" [class.active]="teamMode === 'create'" (click)="teamMode = 'create'">Create</button>
+      <button type="button" [class.active]="teamMode === 'join'" (click)="teamMode = 'join'">Join</button>
+    </div>
+
+    @if (teamMode === 'create') {
+      <div class="form compact">
+        <p class="muted">Use a team per client, product, class project, QA group, or support workflow.</p>
+        <label>
+          <span>Team name</span>
+          <input [(ngModel)]="teamName" />
+        </label>
+        <button class="button primary" type="button" (click)="createTeam()">Create team</button>
+      </div>
+    } @else {
+      <div class="form compact">
+        <p class="muted">Paste an invite code or use an invite link from another team member.</p>
+        <label>
+          <span>Invite code</span>
+          <input [(ngModel)]="inviteCode" placeholder="GUILD-2026" />
+        </label>
+        <button class="button primary" type="button" (click)="joinTeam()">Join by code</button>
       </div>
     }
   </section>

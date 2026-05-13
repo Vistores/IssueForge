@@ -17,7 +17,8 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
     public async Task<ActionResult<IEnumerable<IssueDto>>> GetIssues(
         [FromQuery] IssueStatus? status,
         [FromQuery] IssuePriority? priority,
-        [FromQuery] int? projectId)
+        [FromQuery] int? projectId,
+        [FromQuery] int? assigneeId)
     {
         var teamId = await currentUser.GetActiveTeamIdAsync();
         if (teamId is null)
@@ -40,6 +41,11 @@ public class IssuesController(AppDbContext db, CurrentUserService currentUser) :
         if (projectId is not null)
         {
             query = query.Where(issue => issue.ProjectId == projectId);
+        }
+
+        if (assigneeId is not null)
+        {
+            query = query.Where(issue => issue.Assignments.Any(assignment => assignment.TeamMemberId == assigneeId));
         }
 
         var issues = await query
