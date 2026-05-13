@@ -1,20 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivityLog, MemberStats, Team, TeamMember } from '../../core/models/api.models';
+import { AuthStatus, Team, TeamMember } from '../../core/models/api.models';
 import { Api } from '../../core/services/api';
 import { Toast } from '../../core/services/toast';
 
 @Component({
   selector: 'app-team',
-  imports: [DatePipe, FormsModule],
+  imports: [FormsModule],
   templateUrl: './team.html'
 })
 export class TeamPage implements OnInit {
   teams: Team[] = [];
-  stats: MemberStats[] = [];
-  activity: ActivityLog[] = [];
+  auth?: AuthStatus;
   activeTeamId: number | null = null;
+  selectedTeam?: Team;
+  pendingOwnerTransfer?: TeamMember;
   teamName = 'New QA Guild';
   inviteCode = '';
   isLoading = true;
@@ -26,6 +26,7 @@ export class TeamPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.api.getAuthStatus().subscribe({ next: auth => (this.auth = auth) });
     this.loadTeams();
   }
 
@@ -37,7 +38,6 @@ export class TeamPage implements OnInit {
         this.teams = teams;
         this.activeTeamId = this.resolveActiveTeam(teams);
         this.isLoading = false;
-        this.loadTeamInsights();
       },
       error: () => {
         this.error = 'Could not load teams.';
@@ -74,10 +74,45 @@ export class TeamPage implements OnInit {
   selectTeam(team: Team): void {
     this.activeTeamId = team.id;
     this.api.setActiveTeamId(team.id);
-    this.loadTeamInsights();
   }
 
-  updateMember(member: TeamMember): void {
+  openTeamDetails(team: Team): void {
+    this.selectTeam(team);
+    this.selectedTeam = team;
+  }
+
+  closeTeamDetails(): void {
+    this.selectedTeam = undefined;
+  }
+
+  isCurrentUser(member: TeamMember): boolean {
+    return member.userId === this.auth?.userId;
+  }
+
+  requestMemberUpdate(member: TeamMember): void {
+    if (this.isCurrentUser(member)) {
+      this.toast.error('You cannot edit your own permissions here.');
+      return;
+    }
+
+    if (member.role === 'Owner') {
+      this.pendingOwnerTransfer = member;
+      return;
+    }
+
+    this.updateMember(member);
+  }
+
+  confirmOwnerTransfer(): void {
+    if (!this.pendingOwnerTransfer) {
+      return;
+    }
+
+    this.updateMember(this.pendingOwnerTransfer);
+    this.pendingOwnerTransfer = undefined;
+  }
+
+  private updateMember(member: TeamMember): void {
     const teamId = this.activeTeamId;
     if (!teamId) {
       return;
@@ -93,7 +128,7 @@ export class TeamPage implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success('Member permissions updated.');
-          this.loadTeamInsights();
+          this.loadTeams();
         },
         error: () => this.toast.error('Could not update member.')
       });
@@ -124,16 +159,5 @@ export class TeamPage implements OnInit {
     const active = teams.some(team => team.id === existing) ? existing : teams[0].id;
     this.api.setActiveTeamId(active);
     return active;
-  }
-
-  private loadTeamInsights(): void {
-    if (!this.activeTeamId) {
-      this.stats = [];
-      this.activity = [];
-      return;
-    }
-
-    this.api.getTeamStats(this.activeTeamId).subscribe({ next: stats => (this.stats = stats) });
-    this.api.getTeamActivity(this.activeTeamId).subscribe({ next: activity => (this.activity = activity) });
   }
 }

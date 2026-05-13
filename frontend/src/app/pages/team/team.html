@@ -2,7 +2,7 @@
   <div>
     <p class="eyebrow">Teams</p>
     <h1>Team workspaces</h1>
-    <p>Create a private team, join by invite code, or share an invite link with another tester.</p>
+    <p>Choose a workspace, share invitations, and open detailed team settings from a card.</p>
   </div>
 </section>
 
@@ -35,145 +35,131 @@
     </article>
   </section>
 
-  <section class="panel team-ledger">
-    <div class="panel-header">
-      <h2>My teams</h2>
-      <span>{{ teams.length }} visible</span>
+  <section class="team-card-grid">
+    @for (team of teams; track team.id) {
+      <button class="workspace-card" type="button" [class.active-team]="team.id === activeTeamId" (click)="openTeamDetails(team)">
+        <span class="workspace-card-top">
+          <strong>{{ team.name }}</strong>
+          @if (team.id === activeTeamId) {
+            <span class="badge priority-low">Active</span>
+          }
+        </span>
+        <span class="workspace-meta">
+          <span><strong>{{ team.projectCount }}</strong> projects</span>
+          <span><strong>{{ team.members.length }}</strong> members</span>
+        </span>
+        <span class="avatar-row">
+          @for (member of team.members.slice(0, 6); track member.id) {
+            <span class="avatar-chip" [title]="member.displayName">
+              @if (member.avatarUrl) {
+                <img [src]="member.avatarUrl" [alt]="member.displayName" />
+              } @else {
+                {{ member.displayName.slice(0, 1) }}
+              }
+            </span>
+          }
+        </span>
+        <span class="team-code">{{ team.inviteCode }}</span>
+      </button>
+    } @empty {
+      <div class="empty-team-state">
+        <h3>No team yet</h3>
+        <p>Create your own team or join with an invite code before opening the dashboard.</p>
+      </div>
+    }
+  </section>
+}
+
+@if (selectedTeam) {
+  <div class="modal-backdrop" (click)="closeTeamDetails()"></div>
+  <section class="center-modal team-detail-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Team settings</p>
+        <h2>{{ selectedTeam.name }}</h2>
+      </div>
+      <button class="drawer-close" type="button" (click)="closeTeamDetails()">Close</button>
+    </header>
+
+    <div class="team-invite-block">
+      <div>
+        <span>Invite code</span>
+        <strong>{{ selectedTeam.inviteCode }}</strong>
+      </div>
+      <div class="team-actions">
+        <button class="button ghost compact-button" type="button" (click)="copyInviteCode(selectedTeam)">Copy code</button>
+        <button class="button primary compact-button" type="button" (click)="copyInviteLink(selectedTeam)">Copy invite link</button>
+      </div>
     </div>
 
-    <div class="team-list rich-team-list">
-      @for (team of teams; track team.id) {
-        <article class="team-card rich-team-card" [class.active-team]="team.id === activeTeamId">
-          <button class="team-choice-main" type="button" (click)="selectTeam(team)">
-            <span class="team-name-block">
-              <strong>{{ team.name }}</strong>
-              <small>{{ team.projectCount }} projects &middot; {{ team.members.length }} members</small>
+    <div class="modal-section-title">
+      <strong>Members and permissions</strong>
+      <small>Owner transfer asks for confirmation. Your own permissions are protected.</small>
+    </div>
+
+    <div class="member-list">
+      @for (member of selectedTeam.members; track member.id) {
+        <div class="member-row member-admin-row">
+          <div class="member-identity">
+            <span class="avatar-chip">
+              @if (member.avatarUrl) {
+                <img [src]="member.avatarUrl" [alt]="member.displayName" />
+              } @else {
+                {{ member.displayName.slice(0, 1) }}
+              }
             </span>
-            @if (team.id === activeTeamId) {
-              <span class="badge priority-low">Active</span>
-            }
-          </button>
-
-          <div class="team-invite-block">
             <div>
-              <span>Invite code</span>
-              <strong>{{ team.inviteCode }}</strong>
-            </div>
-            <div class="team-actions">
-              <button class="button ghost compact-button" type="button" (click)="copyInviteCode(team)">
-                Copy code
-              </button>
-              <button class="button primary compact-button" type="button" (click)="copyInviteLink(team)">
-                Copy invite link
-              </button>
+              <span class="member-name">{{ member.displayName }}</span>
+              <small>{{ member.email || 'No email' }}</small>
             </div>
           </div>
 
-          <div class="member-list">
-            @for (member of team.members; track member.id) {
-              <div class="member-row member-admin-row">
-                <div class="member-identity">
-                  <span class="avatar-chip">
-                    @if (member.avatarUrl) {
-                      <img [src]="member.avatarUrl" [alt]="member.displayName" />
-                    } @else {
-                      {{ member.displayName.slice(0, 1) }}
-                    }
-                  </span>
-                  <div>
-                    <span>{{ member.displayName }}</span>
-                    <small>{{ member.email || 'No email' }}</small>
-                  </div>
-                </div>
-
-                <div class="permission-grid">
-                  <label>
-                    <span>Role</span>
-                    <select [(ngModel)]="member.role">
-                      <option value="Owner">Owner</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Member">Member</option>
-                      <option value="Viewer">Viewer</option>
-                    </select>
-                  </label>
-                  <label class="toggle-row">
-                    <input type="checkbox" [(ngModel)]="member.canEditIssues" />
-                    Edit
-                  </label>
-                  <label class="toggle-row">
-                    <input type="checkbox" [(ngModel)]="member.canAssignIssues" />
-                    Assign
-                  </label>
-                  <label>
-                    <span>Limit</span>
-                    <input type="number" min="0" [(ngModel)]="member.issueLimit" />
-                  </label>
-                  <button class="button ghost compact-button" type="button" (click)="updateMember(member)">Save</button>
-                </div>
-              </div>
-            }
+          <div class="permission-grid">
+            <label>
+              <span>Role</span>
+              <select [(ngModel)]="member.role" [disabled]="isCurrentUser(member)">
+                <option value="Owner">Owner</option>
+                <option value="Manager">Manager</option>
+                <option value="Member">Member</option>
+                <option value="Viewer">Viewer</option>
+              </select>
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" [(ngModel)]="member.canEditIssues" [disabled]="isCurrentUser(member)" />
+              Edit
+            </label>
+            <label class="toggle-row">
+              <input type="checkbox" [(ngModel)]="member.canAssignIssues" [disabled]="isCurrentUser(member)" />
+              Assign
+            </label>
+            <label>
+              <span>Limit</span>
+              <input type="number" min="0" [(ngModel)]="member.issueLimit" [disabled]="isCurrentUser(member)" />
+            </label>
+            <button class="button ghost compact-button" type="button" [disabled]="isCurrentUser(member)" (click)="requestMemberUpdate(member)">Save</button>
           </div>
-        </article>
-      } @empty {
-        <div class="empty-team-state">
-          <h3>No team yet</h3>
-          <p>Create your own team or join with an invite code before opening the dashboard.</p>
         </div>
       }
     </div>
   </section>
+}
 
-  <section class="team-insights-grid">
-    <article class="panel">
-      <div class="panel-header">
-        <h2>Member statistics</h2>
-        <span>{{ stats.length }} members</span>
+@if (pendingOwnerTransfer) {
+  <div class="modal-backdrop" (click)="pendingOwnerTransfer = undefined"></div>
+  <section class="center-modal compact-modal" role="dialog" aria-modal="true">
+    <header class="modal-title-row">
+      <div>
+        <p class="eyebrow">Confirm transfer</p>
+        <h2>Transfer owner rights?</h2>
       </div>
-      <div class="stats-grid">
-        @for (stat of stats; track stat.memberId) {
-          <article class="stat-card">
-            <div class="member-identity">
-              <span class="avatar-chip large">
-                @if (stat.avatarUrl) {
-                  <img [src]="stat.avatarUrl" [alt]="stat.displayName" />
-                } @else {
-                  {{ stat.displayName.slice(0, 1) }}
-                }
-              </span>
-              <div>
-                <strong>{{ stat.displayName }}</strong>
-                <small>{{ stat.role }}</small>
-              </div>
-            </div>
-            <div class="mini-bars">
-              <span>Assigned <strong>{{ stat.assignedIssues }}</strong></span>
-              <span>Open <strong>{{ stat.openIssues }}</strong></span>
-              <span>Fixed <strong>{{ stat.fixedIssues }}</strong></span>
-              <span>Critical <strong>{{ stat.criticalIssues }}</strong></span>
-            </div>
-          </article>
-        } @empty {
-          <p class="muted">No member statistics yet.</p>
-        }
-      </div>
-    </article>
-
-    <article class="panel">
-      <div class="panel-header">
-        <h2>Activity log</h2>
-        <span>{{ activity.length }} records</span>
-      </div>
-      <div class="activity-list">
-        @for (log of activity; track log.id) {
-          <article class="activity-item">
-            <strong>{{ log.action }}</strong>
-            <p>{{ log.details }}</p>
-            <small>{{ log.actorName || 'System' }} &middot; {{ log.createdAt | date: 'medium' }}</small>
-          </article>
-        } @empty {
-          <p class="muted">No activity yet.</p>
-        }
-      </div>
-    </article>
+      <button class="drawer-close" type="button" (click)="pendingOwnerTransfer = undefined">Close</button>
+    </header>
+    <p class="description">
+      You are about to make <strong>{{ pendingOwnerTransfer.displayName }}</strong> an Owner. This should be intentional.
+    </p>
+    <div class="form-actions">
+      <button class="button ghost" type="button" (click)="pendingOwnerTransfer = undefined">Cancel</button>
+      <button class="button primary" type="button" (click)="confirmOwnerTransfer()">Confirm transfer</button>
+    </div>
   </section>
 }

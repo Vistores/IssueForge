@@ -13,7 +13,14 @@
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
       <a routerLink="/projects" routerLinkActive="active">Projects</a>
       <a routerLink="/issues" routerLinkActive="active">Issues</a>
-      <a routerLink="/teams" routerLinkActive="active">Teams</a>
+      <a routerLink="/teams" routerLinkActive="active">
+        <span>Teams</span>
+        @if (activeTeamName) {
+          <small>{{ activeTeamName }}</small>
+        }
+      </a>
+      <a routerLink="/stats" routerLinkActive="active">Stats</a>
+      <a routerLink="/activity" routerLinkActive="active">Logs</a>
       <a routerLink="/account" routerLinkActive="active">Account</a>
     </nav>
 

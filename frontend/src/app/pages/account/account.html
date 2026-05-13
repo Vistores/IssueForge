@@ -9,34 +9,42 @@
 @if (isLoading) {
   <p class="state">Loading account...</p>
 } @else {
-  <section class="panel account-panel">
-    <div class="account-avatar image-avatar">
+  <section class="panel profile-card">
+    <input #avatarInput type="file" accept="image/*" hidden (change)="handleFileInput($event)" />
+    <button
+      class="account-avatar image-avatar avatar-drop-zone"
+      type="button"
+      [class.drag-over]="isDragOver"
+      (click)="triggerFile(avatarInput)"
+      (dragover)="$event.preventDefault(); isDragOver = true"
+      (dragleave)="isDragOver = false"
+      (drop)="handleDrop($event)"
+      (paste)="handlePaste($event)"
+      title="Click, drop, or paste an image"
+    >
       @if (auth?.avatarUrl) {
         <img [src]="auth?.avatarUrl" alt="Profile avatar" />
       } @else {
         GI
       }
-    </div>
-    <div class="account-details">
-      <span>Name</span>
-      <strong>{{ auth?.name || 'Signed-in user' }}</strong>
-      <span>Email</span>
-      <strong>{{ auth?.email || 'No email claim returned' }}</strong>
-    </div>
-    <button class="button danger" type="button" (click)="logout()">Sign out</button>
-  </section>
+    </button>
 
-  <section class="panel avatar-panel">
-    <div>
-      <h2>Profile photo</h2>
-      <p class="muted">Paste an image URL. In a real deployment this can be replaced with cloud upload.</p>
+    <div class="profile-copy">
+      <span class="eyebrow">Signed in as</span>
+      <h2>{{ auth?.name || 'Signed-in user' }}</h2>
+      <p>{{ auth?.email || 'No email claim returned' }}</p>
+      <small>Click the avatar, drop an image here, or paste an image from the clipboard.</small>
     </div>
-    <label>
-      <span>Avatar URL</span>
-      <input [(ngModel)]="avatarUrl" placeholder="https://example.com/avatar.png" />
-    </label>
-    <div class="form-actions">
-      <button class="button primary" type="button" (click)="saveAvatar()">Save photo</button>
+
+    <div class="profile-actions">
+      <label>
+        <span>Avatar URL</span>
+        <input [(ngModel)]="avatarUrl" placeholder="https://example.com/avatar.png" />
+      </label>
+      <div class="form-actions">
+        <button class="button ghost" type="button" (click)="saveAvatar()">Save URL</button>
+        <button class="button danger" type="button" (click)="logout()">Sign out</button>
+      </div>
     </div>
   </section>
 }

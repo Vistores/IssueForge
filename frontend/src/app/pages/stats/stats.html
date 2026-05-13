@@ -1,0 +1,41 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Statistics</p>
+    <h1>Team performance</h1>
+    <p>See who is assigned to quests, what is still open, and where critical work is concentrated.</p>
+  </div>
+</section>
+
+@if (isLoading) {
+  <p class="state">Loading statistics...</p>
+} @else if (error) {
+  <p class="state error">{{ error }}</p>
+} @else {
+  <section class="stats-board">
+    @for (stat of stats; track stat.memberId) {
+      <article class="panel stat-profile-card">
+        <div class="member-identity">
+          <span class="avatar-chip large">
+            @if (stat.avatarUrl) {
+              <img [src]="stat.avatarUrl" [alt]="stat.displayName" />
+            } @else {
+              {{ stat.displayName.slice(0, 1) }}
+            }
+          </span>
+          <div>
+            <strong>{{ stat.displayName }}</strong>
+            <small>{{ stat.role }}</small>
+          </div>
+        </div>
+        <div class="mini-bars">
+          <span>Assigned <strong>{{ stat.assignedIssues }}</strong></span>
+          <span>Open <strong>{{ stat.openIssues }}</strong></span>
+          <span>Fixed <strong>{{ stat.fixedIssues }}</strong></span>
+          <span>Critical <strong>{{ stat.criticalIssues }}</strong></span>
+        </div>
+      </article>
+    } @empty {
+      <p class="state">No team statistics yet.</p>
+    }
+  </section>
+}

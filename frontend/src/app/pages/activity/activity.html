@@ -1,0 +1,25 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Activity</p>
+    <h1>Team change log</h1>
+    <p>Audit project changes, issue moves, assignment updates and permission changes in the active team.</p>
+  </div>
+</section>
+
+@if (isLoading) {
+  <p class="state">Loading activity...</p>
+} @else if (error) {
+  <p class="state error">{{ error }}</p>
+} @else {
+  <section class="panel activity-ledger">
+    @for (log of activity; track log.id) {
+      <article class="activity-item">
+        <strong>{{ log.action }}</strong>
+        <p>{{ log.details }}</p>
+        <small>{{ log.actorName || 'System' }} &middot; {{ log.createdAt | date: 'medium' }}</small>
+      </article>
+    } @empty {
+      <p class="muted">No activity yet.</p>
+    }
+  </section>
+}

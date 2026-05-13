@@ -8,6 +8,8 @@ import { ProjectList } from './pages/project-list/project-list';
 import { TeamPage } from './pages/team/team';
 import { AuthPage } from './pages/auth/auth';
 import { AccountPage } from './pages/account/account';
+import { StatsPage } from './pages/stats/stats';
+import { ActivityPage } from './pages/activity/activity';
 import { authGuard } from './core/services/auth.guard';
 
 export const routes: Routes = [
@@ -20,6 +22,8 @@ export const routes: Routes = [
   { path: 'issues/:id', component: IssueDetails, title: 'Issue Details | GameIssueTracker', canActivate: [authGuard] },
   { path: 'issues/:id/edit', component: IssueForm, title: 'Edit Issue | GameIssueTracker', canActivate: [authGuard] },
   { path: 'teams', component: TeamPage, title: 'Teams | GameIssueTracker', canActivate: [authGuard] },
+  { path: 'stats', component: StatsPage, title: 'Stats | GameIssueTracker', canActivate: [authGuard] },
+  { path: 'activity', component: ActivityPage, title: 'Activity | GameIssueTracker', canActivate: [authGuard] },
   { path: 'account', component: AccountPage, title: 'Account | GameIssueTracker', canActivate: [authGuard] },
   { path: 'auth', component: AuthPage, title: 'Sign in | GameIssueTracker' },
   { path: 'team', redirectTo: 'teams' },

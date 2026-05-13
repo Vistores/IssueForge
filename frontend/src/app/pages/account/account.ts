@@ -14,6 +14,7 @@ export class AccountPage implements OnInit {
   auth?: AuthStatus;
   avatarUrl = '';
   isLoading = true;
+  isDragOver = false;
 
   constructor(
     private readonly api: Api,
@@ -43,6 +44,35 @@ export class AccountPage implements OnInit {
     });
   }
 
+  triggerFile(input: HTMLInputElement): void {
+    input.click();
+  }
+
+  handleFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.readAvatarFile(file);
+    }
+  }
+
+  handleDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.readAvatarFile(file);
+    }
+  }
+
+  handlePaste(event: ClipboardEvent): void {
+    const item = Array.from(event.clipboardData?.items ?? []).find(item => item.type.startsWith('image/'));
+    const file = item?.getAsFile();
+    if (file) {
+      this.readAvatarFile(file);
+    }
+  }
+
   logout(): void {
     this.api.logout().subscribe({
       next: () => {
@@ -51,5 +81,19 @@ export class AccountPage implements OnInit {
         this.router.navigateByUrl('/auth');
       }
     });
+  }
+
+  private readAvatarFile(file: File): void {
+    if (!file.type.startsWith('image/')) {
+      this.toast.error('Please choose an image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.avatarUrl = String(reader.result ?? '');
+      this.saveAvatar();
+    };
+    reader.readAsDataURL(file);
   }
 }

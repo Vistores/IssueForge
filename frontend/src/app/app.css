@@ -405,9 +405,15 @@ table {
 th,
 td {
   border-bottom: 1px solid rgba(117, 78, 35, 0.35);
+  border-right: 1px solid rgba(117, 78, 35, 0.24);
   padding: 14px 10px;
   text-align: left;
   vertical-align: middle;
+}
+
+th:last-child,
+td:last-child {
+  border-right: 0;
 }
 
 th {
@@ -1502,6 +1508,48 @@ textarea {
   max-width: 760px;
 }
 
+.profile-card {
+  align-items: center;
+  display: grid;
+  gap: 26px;
+  grid-template-columns: auto minmax(0, 1fr);
+  margin: 0 auto;
+  max-width: 940px;
+  padding: 28px;
+}
+
+.profile-copy h2 {
+  font-size: 30px;
+  margin: 4px 0 4px;
+}
+
+.profile-copy p {
+  color: var(--muted);
+  margin: 0 0 10px;
+  overflow-wrap: anywhere;
+}
+
+.profile-copy small {
+  color: var(--muted);
+}
+
+.profile-actions {
+  display: grid;
+  gap: 12px;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.avatar-drop-zone {
+  cursor: pointer;
+  height: 108px;
+  width: 108px;
+}
+
+.avatar-drop-zone.drag-over {
+  box-shadow: 0 0 0 4px rgba(244, 191, 95, 0.34), var(--shadow);
+}
+
 .account-avatar {
   align-items: center;
   background: linear-gradient(135deg, #c8942e, #7a2e13);
@@ -1542,6 +1590,95 @@ textarea {
   display: grid;
   gap: 18px;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 0.8fr);
+}
+
+.team-card-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.workspace-card {
+  background:
+    linear-gradient(135deg, rgba(255, 249, 224, 0.38), transparent 36%),
+    repeating-linear-gradient(0deg, rgba(101, 63, 24, 0.035) 0 1px, transparent 1px 7px),
+    var(--surface);
+  border: 1px solid rgba(117, 78, 35, 0.86);
+  border-radius: 8px;
+  box-shadow: var(--soft-shadow);
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  text-align: left;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.workspace-card:hover {
+  border-color: #b66b14;
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.workspace-card-top {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.workspace-card-top strong {
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.workspace-meta {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.workspace-meta span {
+  background: rgba(91, 55, 20, 0.08);
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 10px;
+}
+
+.workspace-meta strong {
+  color: var(--text);
+  display: block;
+  font-size: 22px;
+}
+
+.avatar-row {
+  display: flex;
+  min-height: 30px;
+}
+
+.avatar-row .avatar-chip + .avatar-chip {
+  margin-left: -8px;
+}
+
+.team-detail-modal {
+  width: min(1180px, calc(100vw - 44px));
+}
+
+.modal-section-title {
+  display: grid;
+  gap: 4px;
+  margin: 18px 0 12px;
+}
+
+.modal-section-title small {
+  color: var(--muted);
+}
+
+.member-name {
+  display: block;
+  font-weight: 850;
+  margin-bottom: 4px;
 }
 
 .team-command-card {
@@ -1914,6 +2051,7 @@ textarea {
   .dashboard-grid,
   .team-layout,
   .team-command-grid,
+  .team-card-grid,
   .team-insights-grid,
   .team-setup-grid,
   .account-panel,
@@ -1957,6 +2095,11 @@ textarea {
   .permission-grid,
   .mini-bars {
     grid-template-columns: 1fr;
+  }
+
+  .profile-card {
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 
   .toast-stack {
