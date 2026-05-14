@@ -69,7 +69,7 @@
 
     @if (teamMode === 'create') {
       <div class="form compact">
-        <p class="muted">Use a team per client, product, class project, QA group, or support workflow.</p>
+        <p class="muted">Use a team per client, product, department or support workflow.</p>
         <label>
           <span>Team name</span>
           <input [(ngModel)]="teamName" />
@@ -81,7 +81,7 @@
         <p class="muted">Paste an invite code or use an invite link from another team member.</p>
         <label>
           <span>Invite code</span>
-          <input [(ngModel)]="inviteCode" placeholder="GUILD-2026" />
+          <input [(ngModel)]="inviteCode" placeholder="TEAM-2026" />
         </label>
         <button class="button primary" type="button" (click)="joinTeam()">Join by code</button>
       </div>

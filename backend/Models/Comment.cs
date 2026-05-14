@@ -14,7 +14,7 @@ public class Comment
     public string Text { get; set; } = string.Empty;
 
     [MaxLength(80)]
-    public string Author { get; set; } = "QA Tester";
+    public string Author { get; set; } = "Team member";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

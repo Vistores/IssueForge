@@ -150,6 +150,7 @@ export class IssueList implements OnInit {
   }
 
   openPreview(issue: Issue): void {
+    this.isAssigneeFilterOpen = false;
     this.selectedIssue = issue;
     this.selectedComments = [];
     this.commentForm.text = '';
@@ -179,6 +180,7 @@ export class IssueList implements OnInit {
   }
 
   openCreateModal(): void {
+    this.isAssigneeFilterOpen = false;
     this.modalIssue = null;
     this.issueForm = {
       title: '',
@@ -192,6 +194,7 @@ export class IssueList implements OnInit {
   }
 
   openEditModal(issue: Issue): void {
+    this.isAssigneeFilterOpen = false;
     this.modalIssue = issue;
     this.issueForm = {
       title: issue.title,

@@ -1,8 +1,8 @@
 <section class="page-header">
   <div>
-    <p class="eyebrow">Workspace command table</p>
+    <p class="eyebrow">Workspace overview</p>
     <h1>Issue board dashboard</h1>
-    <p>Track project health, important work items and the current workflow state in one shared team ledger.</p>
+    <p>Track project health, important work items and the current workflow state across team workspaces.</p>
   </div>
   <a class="button primary" routerLink="/issues">Create issue</a>
 </section>
@@ -19,25 +19,25 @@
 } @else if (summary) {
   <section class="metric-grid">
     <article class="metric">
-      <div class="metric-icon">#</div>
+      <span class="metric-icon metric-icon-total" aria-hidden="true"></span>
       <span>Total issues</span>
       <strong>{{ summary.totalIssues }}</strong>
-      <small>All tracked team work</small>
+      <small>All tracked work</small>
     </article>
     <article class="metric">
-      <div class="metric-icon open">!</div>
+      <span class="metric-icon metric-icon-open" aria-hidden="true"></span>
       <span>Open</span>
       <strong>{{ summary.openIssues }}</strong>
       <small>Needs triage or implementation</small>
     </article>
     <article class="metric">
-      <div class="metric-icon fixed">OK</div>
+      <span class="metric-icon metric-icon-fixed" aria-hidden="true"></span>
       <span>Fixed</span>
       <strong>{{ summary.fixedIssues }}</strong>
       <small>Ready for verification</small>
     </article>
     <article class="metric critical">
-      <div class="metric-icon critical">!!</div>
+      <span class="metric-icon metric-icon-critical" aria-hidden="true"></span>
       <span>Critical</span>
       <strong>{{ summary.criticalIssues }}</strong>
       <small>Highest risk issues</small>
@@ -77,9 +77,9 @@
             <span>
               <strong>{{ issue.title }}</strong>
               <small>
-                {{ issue.projectName }} · {{ issue.updatedAt | date: 'medium' }}
+                {{ issue.projectName }} &middot; {{ issue.updatedAt | date: 'medium' }}
                 @if (recentActivityFor(issue)?.actorName) {
-                  · by {{ recentActivityFor(issue)?.actorName }}
+                  &middot; by {{ recentActivityFor(issue)?.actorName }}
                 }
               </small>
             </span>
@@ -100,7 +100,7 @@
         <a class="watch-item" routerLink="/issues" [queryParams]="{ previewId: issue.id }">
           <span class="badge priority-critical">Critical</span>
           <strong>{{ issue.title }}</strong>
-          <small>{{ issue.projectName }} · {{ issue.status }}</small>
+          <small>{{ issue.projectName }} &middot; {{ issue.status }}</small>
         </a>
       } @empty {
         <p class="muted">No critical issues right now.</p>

@@ -102,8 +102,11 @@ export class AuthPage implements OnInit {
 
   private setFirstTeam(teams: Team[]): void {
     const activeTeamId = this.api.getActiveTeamId();
-    if (!teams.some(team => team.id === activeTeamId)) {
-      this.api.setActiveTeamId(teams[0]?.id ?? null);
+    const activeTeam = teams.find(team => team.id === activeTeamId);
+    const preferredTeam = teams.find(team => team.projectCount > 0) ?? teams[0];
+
+    if (!activeTeam || (activeTeam.projectCount === 0 && preferredTeam?.projectCount > 0)) {
+      this.api.setActiveTeamId(preferredTeam?.id ?? null);
     }
   }
 

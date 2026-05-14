@@ -97,7 +97,7 @@ The database is created automatically on startup. Development seed data is enabl
 
 Local development seed account:
 
-- Email: `demo@game.local`
+- Email: `alex.morgan@issueforge.local`
 - Password: `Demo123!`
 
 ## Run the Frontend

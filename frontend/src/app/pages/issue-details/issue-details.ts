@@ -21,7 +21,7 @@ export class IssueDetails implements OnInit {
   error = '';
 
   commentForm = this.fb.group({
-    author: ['QA Tester', Validators.maxLength(80)],
+    author: ['Team member', Validators.maxLength(80)],
     text: ['', [Validators.required, Validators.maxLength(1000)]]
   });
 
@@ -66,7 +66,7 @@ export class IssueDetails implements OnInit {
 
     this.api
       .addComment(this.issueId, {
-        author: this.commentForm.value.author || 'QA Tester',
+        author: this.commentForm.value.author || 'Team member',
         text: this.commentForm.value.text || ''
       })
       .subscribe({

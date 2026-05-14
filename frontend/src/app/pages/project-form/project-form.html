@@ -2,7 +2,7 @@
   <div>
     <p class="eyebrow">Project form</p>
     <h1>{{ projectId ? 'Edit project' : 'Create project' }}</h1>
-    <p>Keep project records short and useful for filtering QA issues.</p>
+    <p>Keep project records short and useful for filtering work items.</p>
   </div>
 </section>
 
@@ -13,7 +13,7 @@
 
   <label>
     <span>Name</span>
-    <input formControlName="name" placeholder="Space Raiders" />
+    <input formControlName="name" placeholder="Customer Portal" />
   </label>
   @if (form.controls.name.touched && form.controls.name.invalid) {
     <p class="field-error">Project name is required.</p>

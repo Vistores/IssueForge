@@ -23,8 +23,11 @@ export const authGuard: CanActivateFn = (_route, state) => {
           }
 
           const activeTeamId = api.getActiveTeamId();
-          if (!teams.some(team => team.id === activeTeamId)) {
-            api.setActiveTeamId(teams[0].id);
+          const activeTeam = teams.find(team => team.id === activeTeamId);
+          const preferredTeam = teams.find(team => team.projectCount > 0) ?? teams[0];
+
+          if (!activeTeam || (activeTeam.projectCount === 0 && preferredTeam.projectCount > 0)) {
+            api.setActiveTeamId(preferredTeam.id);
           }
 
           return true;

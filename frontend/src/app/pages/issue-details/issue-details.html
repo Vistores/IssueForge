@@ -36,10 +36,10 @@
     <aside class="panel">
       <h2>Add comment</h2>
       <form class="form compact" [formGroup]="commentForm" (ngSubmit)="addComment()">
-        <label>
-          <span>Author</span>
-          <input formControlName="author" />
-        </label>
+        <div class="comment-author-note">
+          <span>Commenting as</span>
+          <strong>Signed-in team member</strong>
+        </div>
         <label>
           <span>Comment</span>
         <textarea

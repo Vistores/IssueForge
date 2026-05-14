@@ -16,15 +16,14 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetComments(int issueId)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
-        {
-            return Forbid();
-        }
+        var issueTeamId = await db.Issues
+            .Where(issue => issue.Id == issueId && issue.Project != null)
+            .Select(issue => (int?)issue.Project!.TeamId)
+            .FirstOrDefaultAsync();
 
-        if (!await db.Issues.AnyAsync(issue => issue.Id == issueId && issue.Project != null && issue.Project.TeamId == teamId))
+        if (issueTeamId is null || !await currentUser.IsTeamMemberAsync(issueTeamId.Value))
         {
-            return NotFound();
+            return issueTeamId is null ? NotFound() : Forbid();
         }
 
         var comments = await db.Comments
@@ -44,27 +43,22 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
     [HttpPost]
     public async Task<ActionResult<CommentDto>> CreateComment(int issueId, CommentCreateDto dto)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
-        {
-            return Forbid();
-        }
-
-        if (!await currentUser.CanCommentAsync(teamId.Value))
-        {
-            return Forbid();
-        }
-
         var issue = await db.Issues
             .Include(issue => issue.Project)
-            .FirstOrDefaultAsync(issue => issue.Id == issueId && issue.Project != null && issue.Project.TeamId == teamId);
+            .FirstOrDefaultAsync(issue => issue.Id == issueId && issue.Project != null);
 
         if (issue is null)
         {
             return NotFound();
         }
 
-        var member = await currentUser.GetCurrentMemberAsync(teamId.Value);
+        var teamId = issue.Project!.TeamId;
+        if (!await currentUser.CanCommentAsync(teamId))
+        {
+            return Forbid();
+        }
+
+        var member = await currentUser.GetCurrentMemberAsync(teamId);
         var comment = new Comment
         {
             IssueId = issueId,
@@ -84,25 +78,19 @@ public class CommentsController(AppDbContext db, CurrentUserService currentUser)
     [HttpDelete("{commentId:int}")]
     public async Task<IActionResult> DeleteComment(int issueId, int commentId)
     {
-        var teamId = await currentUser.GetActiveTeamIdAsync();
-        if (teamId is null)
-        {
-            return Forbid();
-        }
-
-        if (!await currentUser.CanEditAsync(teamId.Value))
-        {
-            return Forbid();
-        }
-
         var comment = await db.Comments
             .Include(comment => comment.Issue)
             .ThenInclude(issue => issue!.Project)
             .FirstOrDefaultAsync(comment => comment.Id == commentId && comment.IssueId == issueId);
 
-        if (comment is null || comment.Issue?.Project?.TeamId != teamId)
+        if (comment is null || comment.Issue?.Project is null)
         {
             return NotFound();
+        }
+
+        if (!await currentUser.CanEditAsync(comment.Issue.Project.TeamId))
+        {
+            return Forbid();
         }
 
         db.Comments.Remove(comment);

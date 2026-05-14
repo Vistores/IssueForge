@@ -2,7 +2,9 @@
   @if (!isAccessRoute) {
   <aside class="sidebar">
     <a class="brand" routerLink="/">
-        <span class="brand-mark">IF</span>
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 13.5 11.2 18 20 8.5" /><path d="M4 12 12 4l4 4" /><path d="M4 12v6h6" /></svg>
+        </span>
         <span>
           <strong>IssueForge</strong>
         <small>Issue workspace</small>
@@ -10,13 +12,48 @@
     </a>
 
     <nav class="nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-      <a routerLink="/projects" routerLinkActive="active">Projects</a>
-      <a routerLink="/issues" routerLinkActive="active">Issues</a>
-      <a routerLink="/teams" routerLinkActive="active">Teams</a>
-      <a routerLink="/stats" routerLinkActive="active">Stats</a>
-      <a routerLink="/activity" routerLinkActive="active">Logs</a>
-      <a routerLink="/account" routerLinkActive="active">Account</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 5h6v6H4z" /><path d="M14 5h6v4h-6z" /><path d="M14 13h6v6h-6z" /><path d="M4 15h6v4H4z" /></svg>
+        </span>
+        Dashboard
+      </a>
+      <a routerLink="/projects" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H10l2 2h5.5A2.5 2.5 0 0 1 20 9.5v7A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" /></svg>
+        </span>
+        Projects
+      </a>
+      <a routerLink="/issues" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 6h10" /><path d="M7 12h10" /><path d="M7 18h6" /></svg>
+        </span>
+        Issues
+      </a>
+      <a routerLink="/teams" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /><path d="M16 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /><path d="M3.5 19a4.5 4.5 0 0 1 9 0" /><path d="M11.5 19a4.5 4.5 0 0 1 9 0" /></svg>
+        </span>
+        Teams
+      </a>
+      <a routerLink="/stats" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 19V9" /><path d="M12 19V5" /><path d="M19 19v-7" /><path d="M4 19h16" /></svg>
+        </span>
+        Stats
+      </a>
+      <a routerLink="/activity" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14" /><path d="M5 12h14" /><path d="M5 17h9" /></svg>
+        </span>
+        Logs
+      </a>
+      <a routerLink="/account" routerLinkActive="active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" /><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /></svg>
+        </span>
+        Account
+      </a>
     </nav>
 
     <div class="sidebar-note author-card">

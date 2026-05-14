@@ -27,7 +27,8 @@ public class TeamsController(AppDbContext db, CurrentUserService currentUser) : 
             .ThenInclude(member => member.User)
             .Include(team => team.Projects)
             .Where(team => team.Members.Any(member => member.UserId == userId))
-            .OrderBy(team => team.Name)
+            .OrderByDescending(team => team.Projects.Count)
+            .ThenBy(team => team.Name)
             .ToListAsync();
 
         return Ok(teams.Select(ToTeamDto));

@@ -18,7 +18,7 @@ export class TeamPage implements OnInit {
   pendingTeamDelete?: Team;
   isTeamCreateModalOpen = false;
   teamMode: 'create' | 'join' = 'create';
-  teamName = 'New QA Guild';
+  teamName = 'Operations Team';
   inviteCode = '';
   isLoading = true;
   error = '';
@@ -219,7 +219,12 @@ export class TeamPage implements OnInit {
     }
 
     const existing = this.api.getActiveTeamId();
-    const active = teams.some(team => team.id === existing) ? existing : teams[0].id;
+    const existingTeam = teams.find(team => team.id === existing);
+    const preferredTeam = teams.find(team => team.projectCount > 0) ?? teams[0];
+    const active = existingTeam && (existingTeam.projectCount > 0 || preferredTeam.projectCount === 0)
+      ? existingTeam.id
+      : preferredTeam.id;
+
     this.api.setActiveTeamId(active);
     return active;
   }

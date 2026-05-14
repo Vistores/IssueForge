@@ -439,7 +439,7 @@
     <div class="form compact">
       <label>
         <span>Title</span>
-        <input [(ngModel)]="issueForm.title" name="issueTitle" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Player ship clips through asteroid edge" />
+        <input [(ngModel)]="issueForm.title" name="issueTitle" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Checkout fails when VAT field is left empty" />
       </label>
       <label>
         <span>Description</span>
@@ -476,7 +476,7 @@
         <strong>Assign to</strong>
         <div class="member-checkbox-grid">
           @for (member of members; track member.id) {
-            <label class="member-check">
+            <label class="member-check" [class.selected]="isAssigned(member.id)">
               <input type="checkbox" [checked]="isAssigned(member.id)" (change)="toggleAssignee(member.id, $any($event.target).checked)" />
               <span class="avatar-chip">
                 @if (member.avatarUrl) {
