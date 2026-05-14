@@ -11,7 +11,7 @@ It combines a compact issue board, team workspaces, permissions, comments, assig
 - Database: SQLite with Entity Framework Core
 - API documentation: Swagger / OpenAPI
 - Authentication: local email/password auth, optional Google OAuth configuration
-- Styling: custom responsive CSS, no heavy UI framework
+- Styling: custom responsive CSS with a professional dark product interface
 - Version control: Git with a structured commit history
 
 ## Features
@@ -44,7 +44,8 @@ It combines a compact issue board, team workspaces, permissions, comments, assig
 - Recently updated issue list with update time and actor
 - Critical watchlist
 - Toast notifications, loading states and empty states
-- Medieval-inspired issue board theme with parchment panels and a custom background
+- Professional dark workspace UI with readable surfaces, modals, tables and board cards
+- Polished modal workflows for issue creation, issue previews, team settings and account management
 - DTO-based API responses instead of exposing raw EF entities
 - Optional seed data for local development
 - CORS configuration for the Angular dev server
@@ -228,7 +229,7 @@ Issue priorities:
 - Practical Git workflow and commit history
 - Clear README and deployment-oriented project presentation
 - Docker Compose foundations
-- GitHub Actions build workflow
+- GitHub Actions build workflow for backend and frontend checks
 
 ## Deployment Notes
 
