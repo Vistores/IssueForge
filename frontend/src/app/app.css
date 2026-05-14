@@ -3921,15 +3921,11 @@ td {
   width: 34px;
 }
 
-.brand-mark svg,
-.access-brand .brand-mark svg {
-  fill: none;
-  height: 21px;
-  stroke: #fff;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2.2;
-  width: 21px;
+.brand-mark img,
+.access-brand .brand-mark img {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 
 .brand strong,
