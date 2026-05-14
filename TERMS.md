@@ -2,13 +2,13 @@
 
 Last updated: May 14, 2026
 
-These terms describe the intended use of the IssueForge project template and demo application.
+These terms describe the intended use of the IssueForge demo application and repository.
 
 ## Project Purpose
 
-IssueForge is a full-stack issue and work tracking template for teams. It includes an Angular frontend, ASP.NET Core Web API backend, SQLite persistence, authentication, teams, projects, issues, comments, assignments and activity logs.
+IssueForge is a full-stack issue and work tracking project for teams. It includes an Angular frontend, ASP.NET Core Web API backend, SQLite persistence, authentication, teams, projects, issues, comments, assignments and activity logs.
 
-The repository is intended for learning, evaluation, customization and use as a starting point for team workflow products.
+The repository is intended for learning, evaluation, portfolio review and future hosted demo deployment.
 
 ## Demo Use
 
@@ -26,18 +26,6 @@ When you deploy IssueForge yourself, you are responsible for:
 - Security updates
 - Legal compliance for your users and region
 - Replacing demo credentials and seed data
-
-## Commercial Template Use
-
-IssueForge can be adapted into a commercial template or starter product. Before selling or distributing a paid version, add a clear license that explains:
-
-- What buyers are allowed to build with it
-- Whether redistribution is allowed
-- Whether resale of the original template is allowed
-- How many projects or clients one purchase covers
-- Whether support and updates are included
-
-Do not sell third-party assets, logos or services unless you have the right to redistribute them.
 
 ## No Warranty
 

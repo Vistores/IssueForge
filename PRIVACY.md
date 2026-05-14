@@ -2,7 +2,7 @@
 
 Last updated: May 14, 2026
 
-IssueForge is a self-hosted issue and work tracking application template. This policy explains what data the application is designed to process when it is run as a demo or deployed by a team.
+IssueForge is a self-hosted issue and work tracking demo project. This policy explains what data the application is designed to process when it is run locally, used as a demo or deployed by a team.
 
 ## Data the Application Stores
 
@@ -34,7 +34,7 @@ IssueForge can accept screenshots, media, documents and text files as issue atta
 
 ## Demo and Self-Hosted Deployments
 
-This repository is provided as a software template. If you deploy IssueForge, you are responsible for:
+This repository is provided as a demo project. If you deploy IssueForge, you are responsible for:
 
 - Choosing where the database and uploaded files are stored
 - Protecting server, database and storage credentials
@@ -58,6 +58,6 @@ Those services have their own privacy policies.
 
 ## Contact
 
-For questions about this template or demo repository, contact the project maintainer through the GitHub repository.
+For questions about this demo repository, contact the project maintainer through the GitHub repository.
 
-This policy is a project template document and should be reviewed before using IssueForge in a commercial or public production environment.
+This policy is a project document and should be reviewed before using IssueForge in a public hosted environment.

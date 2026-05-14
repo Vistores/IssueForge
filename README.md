@@ -54,18 +54,49 @@ It combines a compact issue board, team workspaces, permissions, comments, assig
 
 ## Screenshots
 
-Add screenshots or GIFs here:
+### Sign-In
 
-- Sign-in and registration screen
-- Dashboard overview
-- Kanban issue board with drag-and-drop
-- Issue preview modal with comments and assignees
-- Issue table with filters and inline editing
-- Team cards and team settings modal
-- Member statistics page
-- Activity log page
-- Account avatar upload and crop modal
-- Swagger API page
+![Sign-in screen](docs/screenshots/sign-in.png)
+
+### Dashboard
+
+![Dashboard overview](docs/screenshots/dashboard.png)
+
+### Issue Board
+
+![Issue board](docs/screenshots/issue-board.png)
+
+### Issue Preview Modal
+
+![Issue preview modal](docs/screenshots/issue-preview-modal.png)
+
+### Issue Table
+
+![Issue table](docs/screenshots/issue-table.png)
+
+### Projects
+
+![Projects page](docs/screenshots/projects.png)
+
+### Teams
+
+![Team workspaces](docs/screenshots/teams.png)
+
+### Team Settings Modal
+
+![Team settings modal](docs/screenshots/team-settings-modal.png)
+
+### Member Statistics
+
+![Member statistics page](docs/screenshots/stats.png)
+
+### Activity Log
+
+![Activity log page](docs/screenshots/activity-log.png)
+
+### Account
+
+![Account page](docs/screenshots/account.png)
 
 ## Public Testing and Releases
 
@@ -77,7 +108,7 @@ For a public browser demo, deploy both parts of the app:
 - Backend: ASP.NET Core Web API
 - Database: SQLite volume or a managed relational database
 
-GitHub Releases are useful for downloading a versioned template, but they do not host the running backend or database by themselves.
+GitHub Releases are useful for downloading a versioned project snapshot, but they do not host the running backend or database by themselves.
 
 ## Project Structure
 
@@ -261,32 +292,13 @@ Issue priorities:
 - Store Google OAuth credentials and connection strings as environment secrets.
 - Run the GitHub Actions workflow before merging changes.
 
-## Privacy, Terms and Template Use
+## Privacy and Terms
 
 - Privacy Policy: [`PRIVACY.md`](PRIVACY.md)
 - Terms of Use: [`TERMS.md`](TERMS.md)
 - Release notes: [`RELEASE_NOTES.md`](RELEASE_NOTES.md)
 
-IssueForge can be adapted into a commercial team workflow template or starter product. Before selling a customized version, add a clear commercial license, remove demo credentials, review third-party assets and replace placeholder legal text with policies that match your deployment and target market.
-
-## Commercial Distribution Notes
-
-IssueForge is best positioned as a full-stack team workflow starter kit rather than a game asset. Recommended sales package:
-
-- Source code archive
-- Setup guide
-- Demo credentials
-- Screenshots and short walkthrough GIF
-- Privacy Policy and Terms templates
-- Commercial license terms
-- Optional paid customization/support offer
-
-Good marketplace fit:
-
-- Code and template marketplaces for full-stack apps
-- Gumroad, Lemon Squeezy or Payhip for direct digital sales
-- A simple landing page with a hosted demo and a purchase link
-- itch.io only as a secondary channel, because it is stronger for games, game assets and indie tools than business web app templates
+These documents are included so the project can be reviewed as a realistic demo and prepared for a future hosted deployment. Review and adjust them before exposing a public demo.
 
 ## Future Improvements
 

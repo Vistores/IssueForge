@@ -2,7 +2,7 @@
 
 ## v0.1.0
 
-Initial public template release for IssueForge.
+Initial public demo release for IssueForge.
 
 ### Included
 
@@ -28,7 +28,7 @@ Initial public template release for IssueForge.
 - Swagger/OpenAPI endpoint
 - Docker Compose setup
 - GitHub Actions backend/frontend build workflow
-- Privacy Policy and Terms of Use template documents
+- Privacy Policy and Terms of Use documents
 
 ### Demo Account
 
@@ -49,4 +49,4 @@ Initial public template release for IssueForge.
 
 ### Notes
 
-This release is suitable as a source-code template and local demo. A public click-through demo requires a deployed frontend, backend and database environment.
+This release is suitable as a local full-stack demo. A public click-through demo requires a deployed frontend, backend and database environment.
